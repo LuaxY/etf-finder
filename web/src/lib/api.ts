@@ -7,7 +7,7 @@ import type {
 } from "./types";
 
 const api = ky.create({
-  prefixUrl: "http://localhost:3001/api",
+  prefixUrl: "/api",
   timeout: 120_000,
 });
 

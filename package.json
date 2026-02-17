@@ -9,6 +9,8 @@
     "dev": "bun run --filter '*' dev",
     "dev:api": "bun run --filter api dev",
     "dev:web": "bun run --filter web dev",
+    "build": "bun run --filter web build",
+    "start": "bun run --filter api start",
     "lint": "ultracite check",
     "lint:fix": "ultracite fix"
   },

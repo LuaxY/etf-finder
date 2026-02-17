@@ -2,11 +2,13 @@
   "name": "api",
   "private": true,
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun src/index.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1",
     "@elysiajs/cors": "1.2",
+    "@elysiajs/static": "^1.4.7",
     "@mastra/core": "latest",
     "ai": "^4",
     "elysia": "1.2",

@@ -21,4 +21,4 @@ const app = new Elysia()
   })
   .listen(port);
 
-console.log(`Server running on port ${app.server?.port}`);
+console.log(`Listening on port ${app.server?.port}`);

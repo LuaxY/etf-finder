@@ -35,7 +35,7 @@ export function SearchLoading() {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto mt-10 w-full max-w-4xl"
+      className="mt-8 w-full"
       exit={{ opacity: 0, y: -8 }}
       initial={{ opacity: 0, y: 16 }}
       transition={{ duration: 0.3 }}

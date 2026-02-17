@@ -91,11 +91,14 @@ const enrichStep = createStep({
       inputData.picks.map((pick) => getETFDetails(pick.symbol))
     );
 
-    // Merge AI-provided country data with Yahoo-enriched details
-    const etfs = details.map((detail, i) => ({
-      ...detail,
-      topCountries: inputData.picks[i]?.topCountries ?? [],
-    }));
+    // Merge AI-provided country data with Yahoo-enriched details,
+    // filtering out symbols that don't exist on Yahoo Finance
+    const etfs = details
+      .map((detail, i) => ({
+        ...detail,
+        topCountries: inputData.picks[i]?.topCountries ?? [],
+      }))
+      .filter((etf) => etf.currentPrice > 0 && etf.provider !== "Unknown");
 
     return {
       etfs,

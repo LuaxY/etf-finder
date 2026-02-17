@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import tailwindcssTypography from "@tailwindcss/typography";
 
 const config: Config = {
 	darkMode: "class",
@@ -13,6 +14,10 @@ const config: Config = {
 			},
 		},
 		extend: {
+			fontFamily: {
+				sans: ['"Inter"', "system-ui", "sans-serif"],
+				serif: ['"Source Serif 4"', "Georgia", "serif"],
+			},
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",
@@ -62,7 +67,7 @@ const config: Config = {
 			},
 		},
 	},
-	plugins: [tailwindcssAnimate],
+	plugins: [tailwindcssAnimate, tailwindcssTypography],
 };
 
 export default config;

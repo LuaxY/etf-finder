@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Search, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const EXAMPLES = [
@@ -25,43 +24,48 @@ export function SearchInput({ onSearch, isLoading }: SearchInputProps) {
 	};
 
 	return (
-		<div className="w-full max-w-2xl mx-auto">
-			<form onSubmit={handleSubmit} className="flex gap-2">
-				<Input
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					placeholder="Search for ETFs by industry..."
-					className="h-12 text-base rounded-xl"
-					disabled={isLoading}
-				/>
-				<Button
-					type="submit"
-					size="lg"
-					className="h-12 px-6 rounded-xl"
-					disabled={isLoading || !query.trim()}
-				>
-					{isLoading ? (
-						<Loader2 className="h-5 w-5 animate-spin" />
-					) : (
-						<Search className="h-5 w-5" />
-					)}
-				</Button>
-			</form>
-			<div className="flex flex-wrap gap-2 mt-3 justify-center">
-				{EXAMPLES.map((example) => (
-					<button
-						key={example}
-						type="button"
-						onClick={() => {
-							setQuery(example);
-							onSearch(example);
-						}}
-						disabled={isLoading}
-						className="px-3 py-1.5 text-sm rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
+		<div className="mx-auto w-full max-w-2xl">
+			<div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+				<form onSubmit={handleSubmit} className="flex gap-2">
+					<div className="relative flex-1">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+						<input
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							placeholder="Search by industry or theme..."
+							className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+							disabled={isLoading}
+						/>
+					</div>
+					<Button
+						type="submit"
+						className="h-11 rounded-lg bg-primary px-5 font-medium hover:bg-primary/90"
+						disabled={isLoading || !query.trim()}
 					>
-						{example}
-					</button>
-				))}
+						{isLoading ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							"Search"
+						)}
+					</Button>
+				</form>
+
+				<div className="mt-3 flex flex-wrap gap-2">
+					{EXAMPLES.map((example) => (
+						<button
+							key={example}
+							type="button"
+							onClick={() => {
+								setQuery(example);
+								onSearch(example);
+							}}
+							disabled={isLoading}
+							className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-primary/30 hover:bg-accent hover:text-primary disabled:opacity-50"
+						>
+							{example}
+						</button>
+					))}
+				</div>
 			</div>
 		</div>
 	);

@@ -23,30 +23,30 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 		return data[data.length - 1].close >= data[0].close;
 	}, [data]);
 
-	const color = isPositive ? "#16a34a" : "#dc2626";
+	const color = isPositive ? "#0f766e" : "#dc2626";
 
 	if (isLoading) {
-		return <Skeleton className="w-full h-[250px] rounded-lg" />;
+		return <Skeleton className="h-[220px] w-full rounded-lg" />;
 	}
 
 	if (data.length === 0) {
 		return (
-			<div className="w-full h-[250px] flex items-center justify-center text-muted-foreground text-sm">
+			<div className="flex h-[220px] w-full items-center justify-center text-sm text-gray-400">
 				No price data available
 			</div>
 		);
 	}
 
 	return (
-		<ResponsiveContainer width="100%" height={250}>
+		<ResponsiveContainer width="100%" height={220}>
 			<AreaChart data={data}>
 				<defs>
 					<linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stopColor={color} stopOpacity={0.3} />
+						<stop offset="0%" stopColor={color} stopOpacity={0.2} />
 						<stop offset="100%" stopColor={color} stopOpacity={0.02} />
 					</linearGradient>
 				</defs>
-				<CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+				<CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
 				<XAxis
 					dataKey="date"
 					tickFormatter={(val) => {
@@ -56,14 +56,18 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 							return val;
 						}
 					}}
-					tick={{ fontSize: 11 }}
-					stroke="#9ca3af"
+					tick={{ fontSize: 11, fill: "#9ca3af" }}
+					stroke="#e5e7eb"
+					tickLine={false}
+					axisLine={false}
 				/>
 				<YAxis
 					domain={["auto", "auto"]}
-					tick={{ fontSize: 11 }}
-					stroke="#9ca3af"
+					tick={{ fontSize: 11, fill: "#9ca3af" }}
+					stroke="#e5e7eb"
 					tickFormatter={(val) => `$${val.toFixed(0)}`}
+					tickLine={false}
+					axisLine={false}
 				/>
 				<Tooltip
 					content={({ active, payload }) => {
@@ -76,9 +80,11 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 							dateLabel = point.date;
 						}
 						return (
-							<div className="bg-white border rounded-lg shadow-sm p-2 text-sm">
-								<p className="text-muted-foreground">{dateLabel}</p>
-								<p className="font-medium">${point.close.toFixed(2)}</p>
+							<div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
+								<p className="text-xs text-gray-400">{dateLabel}</p>
+								<p className="font-medium tabular-nums text-gray-900">
+									${point.close.toFixed(2)}
+								</p>
 							</div>
 						);
 					}}

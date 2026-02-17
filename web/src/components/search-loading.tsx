@@ -158,6 +158,18 @@ export function SearchLoading() {
               />
             </div>
 
+            {/* Country bar skeleton */}
+            <div className="hidden shrink-0 space-y-1.5 lg:block">
+              <div
+                className="h-1.5 w-24 animate-pulse rounded-full bg-gray-100"
+                style={{ animationDelay: `${i * 150 + 90}ms` }}
+              />
+              <div
+                className="h-2.5 w-16 animate-pulse rounded bg-gray-50"
+                style={{ animationDelay: `${i * 150 + 140}ms` }}
+              />
+            </div>
+
             {/* Chevron skeleton */}
             <div
               className="h-4 w-4 shrink-0 animate-pulse rounded bg-gray-100"

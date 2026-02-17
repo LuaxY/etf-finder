@@ -28,11 +28,11 @@ web/
     app.tsx                     # App shell (QueryProvider, search state)
     main.tsx                    # Entry point
     components/
-      search-input.tsx          # Search bar + autocomplete dropdown + example industry chips
-      etf-table.tsx             # Table with inline expandable chart rows
+      search-input.tsx          # Search bar + animated autocomplete dropdown + staggered example chips
+      etf-table.tsx             # Table with staggered row entrance, animated country bars, expandable chart rows
       performance-chart.tsx     # Recharts area chart (teal/red) with loading overlay
       search-loading.tsx        # Animated multi-step loading indicator
-      time-horizon.tsx          # Period toggle (1D–MAX)
+      time-horizon.tsx          # Period toggle (1D–MAX) with layoutId sliding indicator
       ui/                       # shadcn components
     hooks/use-etf.ts            # useSearchETFs (mutation), useSuggestions (query), useETFHistory (query)
     lib/
@@ -84,3 +84,5 @@ Linting uses [Ultracite](https://www.ultracite.ai/) which wraps Biome with opini
 - **1D fallback**: If 1-day period returns no data (weekend/holiday), retries up to 5 times shifting back one day
 - **Autocomplete suggestions**: `lib/suggestions.ts` uses `generateObject` with a fast model (`openai/gpt-oss-safeguard-20b`) via OpenRouter. Frontend debounces input by 300ms (`@uidotdev/usehooks`), shows dropdown with keyboard nav (ArrowUp/Down, Enter, Escape) and ARIA combobox roles. Cached server-side with `suggestions:` prefix.
 - **UI**: Table rows expand inline to show about + country bars + chart. NumberFlow for animated price transitions. Chart keeps previous data visible with loading overlay during period switches.
+- **Framer Motion animations**: Staggered variants for "How it works" cards, sector buttons (with whileHover/whileTap), ETF table rows (slide-in from left), and example chips (scale-in). Suggestions dropdown animated with spring physics. Country allocation bars animate width from 0. Time horizon uses `layoutId` for sliding active indicator. Error banner animated in/out with AnimatePresence. Expanded ETF content sections stagger in (about/countries then chart).
+- **AnimatePresence keying**: ETFTable uses `key={results-${search.submittedAt}}` to ensure proper unmount/remount when switching between cached results. Using a static `key="results"` causes stagger children to get stuck at hidden state during rapid key toggles.

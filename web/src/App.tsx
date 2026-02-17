@@ -12,6 +12,7 @@ import {
   Leaf,
   Search,
   ShieldCheck,
+  TrendingUp,
   Zap,
 } from "lucide-react";
 import { ETFTable } from "@/components/etf-table";
@@ -66,7 +67,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* Hero Header */}
       <header className="relative bg-gradient-to-br from-teal-950 via-teal-900 to-teal-800">
         {/* Decorative background (overflow-hidden to contain glows) */}
@@ -82,15 +83,22 @@ function AppContent() {
             initial={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="mb-2 flex items-center gap-2.5">
-              <div className="h-5 w-5 rounded bg-teal-400/20 p-[3px]">
-                <div className="h-full w-full rounded-sm bg-teal-400" />
+            <button
+              className="group mb-2 flex cursor-pointer items-center gap-2.5"
+              onClick={() => search.reset()}
+              type="button"
+            >
+              <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-400/20">
+                <TrendingUp className="h-3 w-3 text-teal-400" strokeWidth={2.5} />
               </div>
-              <span className="font-medium text-[0.7rem] text-teal-400/80 uppercase tracking-[0.2em]">
+              <span className="font-medium text-[0.7rem] text-teal-400/80 uppercase tracking-[0.2em] transition-colors group-hover:text-teal-300">
                 AI-powered discovery
               </span>
-            </div>
-            <h1 className="font-bold font-serif text-[2.2rem] text-white leading-tight tracking-tight">
+            </button>
+            <h1
+              className="cursor-pointer font-bold font-serif text-[2.2rem] text-white leading-tight tracking-tight"
+              onClick={() => search.reset()}
+            >
               ETF Finder
             </h1>
             <p className="mt-2 max-w-md text-[0.9rem] text-teal-300/50 leading-relaxed">
@@ -251,6 +259,11 @@ function AppContent() {
           </motion.div>
         )}
       </div>
+
+      <p className="mt-auto py-6 text-center text-[0.7rem] text-gray-400 leading-relaxed">
+        For informational purposes only — not financial advice.
+        Always do your own research before making investment decisions.
+      </p>
     </div>
   );
 }

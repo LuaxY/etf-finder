@@ -142,9 +142,27 @@ function ExpandedContent({ etf }: { etf: ETF }) {
   const { data, isLoading } = useETFHistory(etf.symbol, period);
 
   return (
-    <div className="space-y-5 border-gray-100 border-t bg-gray-50/50 px-6 py-5">
+    <motion.div
+      animate="visible"
+      className="space-y-5 border-gray-100 border-t bg-gray-50/50 px-6 py-5"
+      initial="hidden"
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.08 } },
+      }}
+    >
       {/* Top row: About (left) + Countries (right) */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <motion.div
+        className="grid grid-cols-1 gap-5 lg:grid-cols-2"
+        variants={{
+          hidden: { opacity: 0, y: 8 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: { type: "spring", stiffness: 300, damping: 24 },
+          },
+        }}
+      >
         {/* About */}
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-gray-600 text-sm leading-relaxed">
@@ -166,7 +184,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
         {/* Geographic Exposure */}
         {etf.topCountries.length > 0 && (
           <div className="space-y-2.5 rounded-lg border border-gray-200 bg-white p-4">
-            {etf.topCountries.map((c) => {
+            {etf.topCountries.map((c, i) => {
               const maxAllocation = Math.max(
                 ...etf.topCountries.map((x) => x.allocation)
               );
@@ -180,9 +198,15 @@ function ExpandedContent({ etf }: { etf: ETF }) {
                     {c.country}
                   </span>
                   <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                    <div
+                    <motion.div
+                      animate={{ width: `${barWidth}%` }}
                       className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
-                      style={{ width: `${barWidth}%` }}
+                      initial={{ width: 0 }}
+                      transition={{
+                        delay: i * 0.08,
+                        duration: 0.6,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      }}
                     />
                   </div>
                   <span className="w-12 shrink-0 text-right font-medium text-gray-500 text-xs tabular-nums">
@@ -193,10 +217,19 @@ function ExpandedContent({ etf }: { etf: ETF }) {
             })}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Chart — full width below */}
-      <div>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 8 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: { type: "spring", stiffness: 300, damping: 24 },
+          },
+        }}
+      >
         <div className="mb-3 flex items-center justify-between">
           <PriceStats
             currency={etf.currency}
@@ -213,8 +246,8 @@ function ExpandedContent({ etf }: { etf: ETF }) {
             period={period}
           />
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -324,7 +357,12 @@ export function ETFTable({ etfs, summary }: ETFTableProps) {
       transition={{ duration: 0.3 }}
     >
       {summary && (
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <motion.div
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+          initial={{ opacity: 0, y: 10 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
           <div className="mb-3 flex items-center gap-2 font-medium text-gray-400 text-xs uppercase tracking-wide">
             <Sparkles className="h-3.5 w-3.5" />
             AI Summary
@@ -332,13 +370,25 @@ export function ETFTable({ etfs, summary }: ETFTableProps) {
           <div className="prose prose-sm prose-gray prose-li:my-0.5 prose-ul:my-1 max-w-none prose-headings:font-semibold prose-a:text-primary prose-headings:text-gray-900 prose-headings:text-sm prose-strong:text-gray-900 text-gray-600 prose-p:leading-relaxed prose-a:no-underline hover:prose-a:underline">
             <Markdown>{summary}</Markdown>
           </div>
-        </div>
+        </motion.div>
       )}
       <motion.div
-        animate={{ opacity: 1, y: 0 }}
+        animate="visible"
         className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
-        initial={{ opacity: 0, y: 12 }}
-        transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+        initial="hidden"
+        variants={{
+          hidden: { opacity: 0, y: 12 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+              duration: 0.35,
+              ease: [0.25, 0.1, 0.25, 1],
+              staggerChildren: 0.06,
+              delayChildren: 0.1,
+            },
+          },
+        }}
       >
         {etfs.map((etf, i) => {
           const isExpanded = expandedSymbol === etf.symbol;
@@ -419,7 +469,17 @@ function ETFRow({
   isLast: boolean;
 }) {
   return (
-    <div className={isLast || isExpanded ? "" : "border-gray-100 border-b"}>
+    <motion.div
+      className={isLast || isExpanded ? "" : "border-gray-100 border-b"}
+      variants={{
+        hidden: { opacity: 0, x: -12 },
+        visible: {
+          opacity: 1,
+          x: 0,
+          transition: { type: "spring", stiffness: 300, damping: 24 },
+        },
+      }}
+    >
       <button
         className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-gray-50/80"
         onClick={onToggle}
@@ -509,6 +569,6 @@ function ETFRow({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

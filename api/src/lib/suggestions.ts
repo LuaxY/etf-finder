@@ -19,7 +19,7 @@ export async function generateSuggestions(query: string): Promise<string[]> {
     schema: suggestionsSchema,
     prompt: `You are an ETF search autocomplete engine. Given the partial search query "${query}", suggest 5-8 relevant ETF industry, sector, or theme search terms that a user might be looking for.
 
-Return concise, natural search terms (e.g. "Clean Energy", "Semiconductor ETFs", "Nuclear Power", "AI & Robotics"). Focus on well-known ETF categories and investment themes. The suggestions should complete or expand on what the user is typing.`,
+Return concise, natural search terms (e.g. "Clean Energy", "Semiconductor ETFs", "Nuclear Power", "AI & Robotics"). Focus on well-known ETF categories and investment themes. The suggestions should complete or expand on what the user is typing, and never end with "ETF" or "ETFs".`,
   });
 
   return result.object.suggestions;

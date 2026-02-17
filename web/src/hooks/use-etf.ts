@@ -1,12 +1,28 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
+import { useCallback, useRef } from "react";
 import { getETFHistory, getSuggestions, searchETFs } from "@/lib/api";
 import type { Period } from "@/lib/types";
 
 export function useSearchETFs() {
-  return useMutation({
-    mutationFn: (industry: string) => searchETFs(industry),
+  const abortRef = useRef<AbortController | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: (industry: string) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      return searchETFs(industry, controller.signal);
+    },
   });
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    mutation.reset();
+  }, [mutation]);
+
+  return { ...mutation, cancel };
 }
 
 export function useSuggestions(query: string) {

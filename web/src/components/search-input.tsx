@@ -1,4 +1,5 @@
-import { Loader2, Search } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSuggestions } from "@/hooks/use-etf";
@@ -13,10 +14,15 @@ const EXAMPLES = [
 
 interface SearchInputProps {
   isLoading: boolean;
+  onCancel?: () => void;
   onSearch: (query: string) => void;
 }
 
-export function SearchInput({ onSearch, isLoading }: SearchInputProps) {
+export function SearchInput({
+  onSearch,
+  onCancel,
+  isLoading,
+}: SearchInputProps) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -108,45 +114,55 @@ export function SearchInput({ onSearch, isLoading }: SearchInputProps) {
     selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-2xl" ref={containerRef}>
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <form className="flex gap-2" onSubmit={handleSubmit}>
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              aria-activedescendant={activeDescendant}
-              aria-autocomplete="list"
-              aria-controls={listboxId}
-              aria-expanded={showDropdown}
-              className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 pr-4 pl-10 text-gray-900 text-sm placeholder:text-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
-              disabled={isLoading}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setIsOpen(true);
-              }}
-              onFocus={() => setIsOpen(true)}
-              onKeyDown={handleKeyDown}
-              placeholder="Search by industry or theme..."
-              ref={inputRef}
-              role="combobox"
-              value={query}
-            />
+    <div className="w-full" ref={containerRef}>
+      <form className="flex gap-3" onSubmit={handleSubmit}>
+        <div className="relative flex-1">
+          <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-teal-400/60" />
+          <input
+            aria-activedescendant={activeDescendant}
+            aria-autocomplete="list"
+            aria-controls={listboxId}
+            aria-expanded={showDropdown}
+            className="h-[52px] w-full rounded-lg border border-white/10 bg-white/[0.97] pr-4 pl-8 text-gray-900 shadow-lg shadow-teal-950/20 backdrop-blur-sm placeholder:text-gray-400 focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-teal-400/20"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setIsOpen(true);
+            }}
+            onFocus={() => setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search by industry or theme..."
+            ref={inputRef}
+            role="combobox"
+            value={query}
+          />
 
+          <AnimatePresence>
             {showDropdown && (
-              <div
-                className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+              <motion.div
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="absolute top-full right-0 left-0 z-50 mt-2 max-h-64 overflow-auto rounded-lg border border-gray-100 bg-white py-1 shadow-teal-950/10 shadow-xl"
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
                 id={listboxId}
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
                 role="listbox"
+                style={{ transformOrigin: "top" }}
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 30,
+                }}
               >
                 {suggestions.map((suggestion, index) => (
-                  <div
+                  <motion.div
+                    animate={{ opacity: 1, x: 0 }}
                     aria-selected={index === selectedIndex}
-                    className={`cursor-pointer px-3 py-2 text-sm ${
+                    className={`cursor-pointer px-4 py-2.5 text-sm ${
                       index === selectedIndex
                         ? "bg-accent text-primary"
                         : "text-gray-700 hover:bg-gray-50"
                     }`}
                     id={`suggestion-${index}`}
+                    initial={{ opacity: 0, x: -8 }}
                     key={suggestion}
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -155,44 +171,65 @@ export function SearchInput({ onSearch, isLoading }: SearchInputProps) {
                     onMouseEnter={() => setSelectedIndex(index)}
                     role="option"
                     tabIndex={-1}
+                    transition={{ delay: index * 0.03, duration: 0.2 }}
                   >
                     {suggestion}
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
+        </div>
+        {isLoading ? (
           <Button
-            className="h-11 rounded-lg bg-primary px-5 font-medium hover:bg-primary/90"
-            disabled={isLoading || !query.trim()}
+            className="h-[52px] w-[100px] rounded-lg border border-red-400/30 bg-red-500/20 text-red-400 backdrop-blur-sm transition-all hover:border-red-400/50 hover:bg-red-500/30 hover:text-red-300"
+            onClick={onCancel}
+            type="button"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        ) : (
+          <Button
+            className="h-[52px] w-[100px] rounded-lg border border-teal-600/30 bg-gradient-to-b from-teal-500 to-teal-600 font-semibold text-teal-50 shadow-[0_2px_10px_rgba(13,148,136,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all hover:from-teal-400 hover:to-teal-500 hover:shadow-[0_2px_12px_rgba(13,148,136,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] disabled:opacity-40 disabled:shadow-none"
+            disabled={!query.trim()}
             type="submit"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Search"
-            )}
+            Search
           </Button>
-        </form>
+        )}
+      </form>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          {EXAMPLES.map((example) => (
-            <button
-              className="rounded-full border border-gray-200 bg-white px-3 py-1 font-medium text-gray-600 text-xs transition-colors hover:border-primary/30 hover:bg-accent hover:text-primary disabled:opacity-50"
-              disabled={isLoading}
-              key={example}
-              onClick={() => {
-                setQuery(example);
-                setIsOpen(false);
-                onSearch(example);
-              }}
-              type="button"
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      </div>
+      <motion.div
+        animate="visible"
+        className="mt-4 flex flex-wrap items-center gap-2"
+        initial="hidden"
+        variants={{
+          hidden: {},
+          visible: {
+            transition: { staggerChildren: 0.05, delayChildren: 0.2 },
+          },
+        }}
+      >
+        {EXAMPLES.map((example) => (
+          <motion.button
+            className="rounded-full border border-teal-400/15 bg-teal-400/10 px-3.5 py-1.5 font-medium text-teal-200/90 text-xs backdrop-blur-sm transition-all hover:border-teal-400/30 hover:bg-teal-400/20 hover:text-white disabled:opacity-50"
+            disabled={isLoading}
+            key={example}
+            onClick={() => {
+              setQuery(example);
+              setIsOpen(false);
+              onSearch(example);
+            }}
+            type="button"
+            variants={{
+              hidden: { opacity: 0, scale: 0.92 },
+              visible: { opacity: 1, scale: 1 },
+            }}
+          >
+            {example}
+          </motion.button>
+        ))}
+      </motion.div>
     </div>
   );
 }

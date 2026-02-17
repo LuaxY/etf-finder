@@ -11,8 +11,11 @@ const api = ky.create({
   timeout: 120_000,
 });
 
-export function searchETFs(industry: string): Promise<SearchResponse> {
-  return api.post("etfs/search", { json: { industry } }).json();
+export function searchETFs(
+  industry: string,
+  signal?: AbortSignal
+): Promise<SearchResponse> {
+  return api.post("etfs/search", { json: { industry }, signal }).json();
 }
 
 export function getSuggestions(q: string): Promise<SuggestionsResponse> {

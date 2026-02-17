@@ -25,7 +25,7 @@ api/
     lib/suggestions.ts          # AI autocomplete suggestions via OpenRouter (morph model)
 web/
   src/
-    App.tsx                     # App shell (QueryProvider, search state)
+    app.tsx                     # App shell (QueryProvider, search state)
     main.tsx                    # Entry point
     components/
       search-input.tsx          # Search bar + autocomplete dropdown + example industry chips
@@ -60,9 +60,11 @@ The API has no build step — it runs directly via `bun run --hot`.
 ## Lint
 
 ```bash
-bun run lint                    # Biome check (format + lint) across the whole repo
-bun run lint:fix                # Auto-fix with --write
+bun run lint                    # Ultracite check (Biome-based format + lint) across the whole repo
+bun run lint:fix                # Auto-fix with Ultracite
 ```
+
+Linting uses [Ultracite](https://www.ultracite.ai/) which wraps Biome with opinionated defaults. Config extends `ultracite/core` + `ultracite/react` in `biome.json`.
 
 ## API Endpoints
 

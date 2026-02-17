@@ -12,6 +12,7 @@
     "@mastra/core": "latest",
     "ai": "^4",
     "elysia": "1.2",
+    "fast-decode-uri-component": "^1.0.1",
     "yahoo-finance2": "3",
     "zod": "^3"
   },

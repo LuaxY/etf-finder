@@ -68,7 +68,6 @@ function AppContent() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Hero Header */}
       <header className="relative bg-gradient-to-br from-teal-950 via-teal-900 to-teal-800">
         {/* Decorative background (overflow-hidden to contain glows) */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -122,7 +121,7 @@ function AppContent() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <main className="mx-auto max-w-4xl px-4 py-8">
         {/* Error */}
         <AnimatePresence>
           {search.isError && (
@@ -160,7 +159,7 @@ function AppContent() {
             transition={{ delay: 0.25, duration: 0.45, ease: "easeOut" }}
           >
             {/* How it works */}
-            <div className="mb-10">
+            <section className="mb-10">
               <h2 className="mb-5 font-semibold font-serif text-gray-900 text-lg">
                 How it works
               </h2>
@@ -207,10 +206,10 @@ function AppContent() {
                   </motion.div>
                 ))}
               </motion.div>
-            </div>
+            </section>
 
             {/* Popular sectors */}
-            <div>
+            <section>
               <h2 className="mb-5 font-semibold font-serif text-gray-900 text-lg">
                 Popular sectors
               </h2>
@@ -255,15 +254,17 @@ function AppContent() {
                   </motion.button>
                 ))}
               </motion.div>
-            </div>
+            </section>
           </motion.div>
         )}
-      </div>
+      </main>
 
-      <p className="mt-auto py-6 text-center text-[0.7rem] text-gray-400 leading-relaxed">
-        For informational purposes only — not financial advice.
-        Always do your own research before making investment decisions.
-      </p>
+      <footer className="mt-auto py-6 text-center text-[0.7rem] text-gray-400 leading-relaxed">
+        <p>
+          For informational purposes only — not financial advice.
+          Always do your own research before making investment decisions.
+        </p>
+      </footer>
     </div>
   );
 }

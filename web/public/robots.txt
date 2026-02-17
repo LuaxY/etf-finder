@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://etf-finder.app/sitemap.xml

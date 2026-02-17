@@ -10,7 +10,7 @@ interface TimeHorizonProps {
 
 export function TimeHorizon({ selected, onChange }: TimeHorizonProps) {
   return (
-    <div className="flex gap-0.5 rounded-lg bg-gray-100 p-0.5">
+    <div className="flex w-fit gap-0.5 rounded-lg bg-gray-100 p-0.5">
       {PERIODS.map((period) => (
         <button
           className="relative rounded-md px-2 py-1 font-medium text-xs"

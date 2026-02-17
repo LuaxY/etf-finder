@@ -144,7 +144,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
   return (
     <motion.div
       animate="visible"
-      className="space-y-5 border-gray-100 border-t bg-gray-50/50 px-6 py-5"
+      className="space-y-5 border-gray-100 border-t bg-gray-50/50 px-4 py-4 sm:px-6 sm:py-5"
       initial="hidden"
       variants={{
         hidden: {},
@@ -230,7 +230,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
           },
         }}
       >
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <PriceStats
             currency={etf.currency}
             currentPrice={etf.currentPrice}
@@ -351,7 +351,7 @@ export function ETFTable({ etfs, summary }: ETFTableProps) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="mt-8 w-full"
+      className="mt-4 w-full sm:mt-8"
       exit={{ opacity: 0, y: -8 }}
       initial={{ opacity: 0, y: 16 }}
       transition={{ duration: 0.3 }}

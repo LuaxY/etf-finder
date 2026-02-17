@@ -76,7 +76,7 @@ function AppContent() {
           <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-4xl px-4 pt-12 pb-10">
+        <div className="relative mx-auto max-w-4xl px-4 py-4 sm:pt-12 sm:pb-10">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: 10 }}
@@ -120,7 +120,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl px-4 py-8">
+      <main className="mx-auto w-full max-w-4xl px-4 py-4 sm:py-8">
         {/* Error */}
         <AnimatePresence>
           {search.isError && (
@@ -164,7 +164,7 @@ function AppContent() {
               </h2>
               <motion.div
                 animate="visible"
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 gap-4 sm:grid-cols-3"
                 initial="hidden"
                 variants={{
                   hidden: {},
@@ -214,7 +214,7 @@ function AppContent() {
               </h2>
               <motion.div
                 animate="visible"
-                className="grid grid-cols-3 gap-3"
+                className="grid grid-cols-2 gap-3 sm:grid-cols-3"
                 initial="hidden"
                 variants={{
                   hidden: {},

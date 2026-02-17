@@ -82,23 +82,22 @@ function AppContent() {
             initial={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <button
-              className="group mb-2 flex cursor-pointer items-center gap-2.5"
-              onClick={() => search.reset()}
-              type="button"
-            >
+            <div className="group mb-2 flex items-center gap-2.5">
               <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-400/20">
                 <TrendingUp className="h-3 w-3 text-teal-400" strokeWidth={2.5} />
               </div>
               <span className="font-medium text-[0.7rem] text-teal-400/80 uppercase tracking-[0.2em] transition-colors group-hover:text-teal-300">
                 AI-powered discovery
               </span>
-            </button>
-            <h1
-              className="cursor-pointer font-bold font-serif text-[2.2rem] text-white leading-tight tracking-tight"
-              onClick={() => search.reset()}
-            >
-              ETF Finder
+            </div>
+            <h1 className="font-bold font-serif text-[2.2rem] text-white leading-tight tracking-tight">
+              <button
+                className="cursor-pointer"
+                onClick={() => search.reset()}
+                type="button"
+              >
+                ETF Finder
+              </button>
             </h1>
             <p className="mt-2 max-w-md text-[0.9rem] text-teal-300/50 leading-relaxed">
               Search any sector or theme and get instant ETF recommendations

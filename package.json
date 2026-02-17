@@ -1,0 +1,12 @@
+{
+	"name": "etf-recommendation",
+	"private": true,
+	"workspaces": ["api", "web"],
+	"scripts": {
+		"dev": "bun run --filter '*' dev",
+		"dev:api": "bun run --filter api dev",
+		"dev:web": "bun run --filter web dev",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write ."
+	}
+}

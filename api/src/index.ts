@@ -10,7 +10,7 @@ const app = new Elysia()
   .use(cors())
   .use(etfRoutes)
   .use(
-    staticPlugin({
+    await staticPlugin({
       assets: join(import.meta.dirname, "../../web/dist"),
       prefix: "/",
       indexHTML: true,

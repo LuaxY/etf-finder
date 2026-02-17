@@ -1,5 +1,10 @@
 import ky from "ky";
-import type { HistoryResponse, Period, SearchResponse } from "./types";
+import type {
+	HistoryResponse,
+	Period,
+	SearchResponse,
+	SuggestionsResponse,
+} from "./types";
 
 const api = ky.create({
 	prefixUrl: "http://localhost:3001/api",
@@ -8,6 +13,12 @@ const api = ky.create({
 
 export async function searchETFs(industry: string): Promise<SearchResponse> {
 	return api.post("etfs/search", { json: { industry } }).json();
+}
+
+export async function getSuggestions(
+	q: string,
+): Promise<SuggestionsResponse> {
+	return api.get("etfs/suggestions", { searchParams: { q } }).json();
 }
 
 export async function getETFHistory(

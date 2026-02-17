@@ -84,6 +84,7 @@ export function ETFDetailSheet({
 								<PerformanceChart
 									data={data?.prices ?? []}
 									isLoading={isLoading}
+									period={period}
 								/>
 							</div>
 

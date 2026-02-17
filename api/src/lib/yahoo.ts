@@ -56,27 +56,27 @@ export async function getHistory(
 		const period = opts.period ?? "1M";
 		const config = periodConfig[period];
 
-		let startDate = getStartDate(config.range);
-		let points: PricePoint[] = [];
+		// Use Yahoo's range parameter — it handles intraday windows correctly
+		const result = await yahooFinance.chart(
+			symbol,
+			{ range: config.range, interval: config.interval },
+			{ validateResult: false },
+		);
+		let points = mapQuotes(result);
 
-		// For 1D, if no data (weekend/holiday), widen the window day by day up to 5 tries
-		const maxRetries = period === "1D" ? 5 : 1;
-		for (let attempt = 0; attempt < maxRetries; attempt++) {
-			const result = await yahooFinance.chart(
+		// For 1D, if no data (weekend/holiday), widen to 5d and take only the last trading day
+		if (points.length === 0 && period === "1D") {
+			const fallback = await yahooFinance.chart(
 				symbol,
-				{
-					period1: startDate,
-					interval: config.interval,
-				},
+				{ range: "5d", interval: "5m" },
 				{ validateResult: false },
 			);
-			points = mapQuotes(result);
-			if (points.length > 0) break;
-
-			// Shift start date back one more day
-			const d = new Date(startDate);
-			d.setDate(d.getDate() - 1);
-			startDate = d.toISOString().split("T")[0]!;
+			const allPoints = mapQuotes(fallback);
+			if (allPoints.length > 0) {
+				// Extract the last trading day's data
+				const lastDate = allPoints[allPoints.length - 1].date.split("T")[0];
+				points = allPoints.filter((p) => p.date.startsWith(lastDate!));
+			}
 		}
 
 		return points;
@@ -214,35 +214,3 @@ function mapQuotes(result: any): PricePoint[] {
 	return points;
 }
 
-function getStartDate(range: string): string {
-	const now = new Date();
-
-	switch (range) {
-		case "1d":
-			now.setDate(now.getDate() - 1);
-			break;
-		case "5d":
-			now.setDate(now.getDate() - 5);
-			break;
-		case "1mo":
-			now.setMonth(now.getMonth() - 1);
-			break;
-		case "6mo":
-			now.setMonth(now.getMonth() - 6);
-			break;
-		case "ytd":
-			return `${now.getFullYear()}-01-01`;
-		case "1y":
-			now.setFullYear(now.getFullYear() - 1);
-			break;
-		case "5y":
-			now.setFullYear(now.getFullYear() - 5);
-			break;
-		case "max":
-			return "1970-01-01";
-		default:
-			now.setMonth(now.getMonth() - 1);
-	}
-
-	return now.toISOString().split("T")[0]!;
-}

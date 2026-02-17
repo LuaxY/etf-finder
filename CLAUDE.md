@@ -48,6 +48,21 @@ bun install
 bun run dev                     # Starts API (:3001) + Vite (:5173)
 ```
 
+## Build
+
+```bash
+bun run --filter web build      # Type-checks (tsc -b) then builds Vite production bundle
+```
+
+The API has no build step — it runs directly via `bun run --hot`.
+
+## Lint
+
+```bash
+bun run lint                    # Biome check (format + lint) across the whole repo
+bun run lint:fix                # Auto-fix with --write
+```
+
 ## API Endpoints
 
 - `POST /api/etfs/search` — body: `{ industry: string }` → `{ etfs: ETF[], summary: string }`

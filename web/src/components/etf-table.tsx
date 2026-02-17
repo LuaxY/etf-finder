@@ -207,7 +207,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
 					<TimeHorizon selected={period} onChange={setPeriod} />
 				</div>
 				<div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-					<PerformanceChart data={data?.prices ?? []} isLoading={isLoading} />
+					<PerformanceChart data={data?.prices ?? []} isLoading={isLoading} period={period} />
 				</div>
 			</div>
 		</div>

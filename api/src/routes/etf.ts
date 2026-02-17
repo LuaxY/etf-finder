@@ -2,8 +2,35 @@ import { Elysia, t } from "elysia";
 import { mastra } from "../mastra";
 import { getHistory } from "../lib/yahoo";
 import { getCached, setCache } from "../lib/cache";
+import { generateSuggestions } from "../lib/suggestions";
 
 export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
+	.get(
+		"/suggestions",
+		async ({ query }) => {
+			const q = query.q?.trim() ?? "";
+			if (q.length < 2) return { suggestions: [] };
+
+			const cacheKey = `suggestions:${q.toLowerCase()}`;
+			const cached = getCached<{ suggestions: string[] }>(cacheKey);
+			if (cached) return cached;
+
+			try {
+				const suggestions = await generateSuggestions(q);
+				const result = { suggestions };
+				setCache(cacheKey, result);
+				return result;
+			} catch (e) {
+				console.error("Suggestions error:", e);
+				return { suggestions: [] };
+			}
+		},
+		{
+			query: t.Object({
+				q: t.Optional(t.String()),
+			}),
+		},
+	)
 	.post(
 		"/search",
 		async ({ body, error }) => {

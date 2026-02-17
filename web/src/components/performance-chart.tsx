@@ -10,14 +10,80 @@ import {
 } from "recharts";
 import { Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import type { PricePoint } from "@/lib/types";
+import type { Period, PricePoint } from "@/lib/types";
 
 interface PerformanceChartProps {
 	data: PricePoint[];
 	isLoading: boolean;
+	period: Period;
 }
 
-export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
+function getTickFormatter(period: Period) {
+	const isIntraday = period === "1D";
+	const isShortRange = period === "5D";
+	const isLongRange = period === "5Y" || period === "MAX";
+
+	return (val: string) => {
+		try {
+			const d = parseISO(val);
+			if (isIntraday) return format(d, "HH:mm");
+			if (isShortRange) return format(d, "EEE d");
+			if (isLongRange) return format(d, "MMM yyyy");
+			return format(d, "MMM d");
+		} catch {
+			return val;
+		}
+	};
+}
+
+function getTooltipFormat(period: Period) {
+	return (val: string) => {
+		try {
+			const d = parseISO(val);
+			if (period === "1D" || period === "5D")
+				return format(d, "MMM d, yyyy HH:mm");
+			return format(d, "MMM d, yyyy");
+		} catch {
+			return val;
+		}
+	};
+}
+
+function deduplicateTicks(data: PricePoint[], formatter: (val: string) => string, maxTicks: number) {
+	if (data.length <= maxTicks) {
+		// Even with few data points, deduplicate labels
+		const seen = new Set<string>();
+		const indices: number[] = [];
+		for (let i = 0; i < data.length; i++) {
+			const label = formatter(data[i].date);
+			if (!seen.has(label)) {
+				seen.add(label);
+				indices.push(i);
+			}
+		}
+		return indices.map((i) => data[i].date);
+	}
+
+	// Pick evenly spaced candidates, then deduplicate labels
+	const step = (data.length - 1) / (maxTicks - 1);
+	const candidates: number[] = [];
+	for (let i = 0; i < maxTicks; i++) {
+		candidates.push(Math.round(i * step));
+	}
+
+	const seen = new Set<string>();
+	const ticks: string[] = [];
+	for (const idx of candidates) {
+		const label = formatter(data[idx].date);
+		if (!seen.has(label)) {
+			seen.add(label);
+			ticks.push(data[idx].date);
+		}
+	}
+	return ticks;
+}
+
+export function PerformanceChart({ data, isLoading, period }: PerformanceChartProps) {
 	const prevDataRef = useRef<PricePoint[]>([]);
 
 	// Use previous data while loading so the chart stays visible
@@ -34,6 +100,13 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 	}, [chartData]);
 
 	const color = isPositive ? "#0f766e" : "#dc2626";
+
+	const tickFormatter = useMemo(() => getTickFormatter(period), [period]);
+	const tooltipFormatter = useMemo(() => getTooltipFormat(period), [period]);
+	const ticks = useMemo(
+		() => deduplicateTicks(chartData, tickFormatter, 6),
+		[chartData, tickFormatter],
+	);
 
 	if (chartData.length === 0 && !isLoading) {
 		return (
@@ -69,13 +142,8 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 					<CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
 					<XAxis
 						dataKey="date"
-						tickFormatter={(val) => {
-							try {
-								return format(parseISO(val), "MMM d");
-							} catch {
-								return val;
-							}
-						}}
+						ticks={ticks}
+						tickFormatter={tickFormatter}
 						tick={{ fontSize: 11, fill: "#9ca3af" }}
 						stroke="#e5e7eb"
 						tickLine={false}
@@ -95,12 +163,7 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 						content={({ active, payload }) => {
 							if (!active || !payload?.length) return null;
 							const point = payload[0].payload as PricePoint;
-							let dateLabel: string;
-							try {
-								dateLabel = format(parseISO(point.date), "MMM d, yyyy");
-							} catch {
-								dateLabel = point.date;
-							}
+							const dateLabel = tooltipFormatter(point.date);
 							return (
 								<div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm">
 									<p className="text-xs text-gray-400">{dateLabel}</p>

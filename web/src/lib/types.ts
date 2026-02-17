@@ -35,3 +35,7 @@ export type Period =
 	| "5Y"
 	| "MAX"
 	| "custom";
+
+export interface SuggestionsResponse {
+	suggestions: string[];
+}

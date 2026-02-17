@@ -1,6 +1,6 @@
 import YahooFinance from "yahoo-finance2";
 
-const yahooFinance = new YahooFinance();
+const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 type Period = "1D" | "5D" | "1M" | "6M" | "YTD" | "1Y" | "5Y" | "MAX";
 
@@ -72,13 +72,113 @@ export async function getHistory(
 	}
 }
 
+export interface ETFDetails {
+	symbol: string;
+	name: string;
+	description: string;
+	mer: number;
+	topCountries: { country: string; allocation: number }[];
+	productUrl: string;
+	provider: string;
+}
+
+const PROVIDER_URL_PATTERNS: Record<string, (symbol: string) => string> = {
+	Vanguard: (s) =>
+		`https://investor.vanguard.com/investment-products/etfs/profile/${s}`,
+	iShares: (s) =>
+		`https://www.ishares.com/us/products/${s}`,
+	SPDR: (s) =>
+		`https://www.ssga.com/us/en/intermediary/etfs/funds/${s.toLowerCase()}`,
+	Invesco: (s) =>
+		`https://www.invesco.com/us/financial-products/etfs/product-detail?audienceType=Investor&ticker=${s}`,
+	"ARK ETF Trust": (s) =>
+		`https://ark-funds.com/funds/${s.toLowerCase()}`,
+	"Global X Funds": (s) =>
+		`https://www.globalxetfs.com/funds/${s.toLowerCase()}`,
+};
+
+function buildProductUrl(symbol: string, provider: string): string {
+	for (const [key, builder] of Object.entries(PROVIDER_URL_PATTERNS)) {
+		if (provider.toLowerCase().includes(key.toLowerCase())) {
+			return builder(symbol);
+		}
+	}
+	return `https://finance.yahoo.com/quote/${symbol}`;
+}
+
+export async function getETFDetails(symbol: string): Promise<ETFDetails> {
+	try {
+		// biome-ignore lint/suspicious/noExplicitAny: yahoo-finance2 has complex types
+		const result: any = await yahooFinance.quoteSummary(
+			symbol,
+			{
+				modules: [
+					"price",
+					"summaryProfile",
+					"fundProfile",
+					"topHoldings",
+				],
+			},
+			{ validateResult: false },
+		);
+
+		const name =
+			result.price?.longName ||
+			result.price?.shortName ||
+			symbol;
+		const provider = result.fundProfile?.family || "Unknown";
+		const description =
+			result.summaryProfile?.longBusinessSummary || "";
+		const rawMer =
+			result.fundProfile?.feesExpensesInvestment?.annualReportExpenseRatio;
+		// Yahoo returns MER as a decimal (e.g. 0.0009 = 0.09%), convert to percentage
+		const mer = rawMer ? +(rawMer * 100).toFixed(2) : 0;
+
+		// Try to extract top holdings as a proxy for country exposure
+		// Yahoo doesn't provide country breakdown directly, so we skip it
+		const topCountries: { country: string; allocation: number }[] = [];
+
+		const productUrl = buildProductUrl(symbol, provider);
+
+		return {
+			symbol,
+			name,
+			description,
+			mer,
+			topCountries,
+			productUrl,
+			provider,
+		};
+	} catch (e) {
+		console.error(`Failed to fetch details for ${symbol}:`, e);
+		return {
+			symbol,
+			name: symbol,
+			description: "",
+			mer: 0,
+			topCountries: [],
+			productUrl: `https://finance.yahoo.com/quote/${symbol}`,
+			provider: "Unknown",
+		};
+	}
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: yahoo-finance2 has complex overloaded types
 function mapQuotes(result: any): PricePoint[] {
 	const quotes = result?.quotes ?? [];
-	return quotes.map((q: { date: Date; close: number | null }) => ({
-		date: new Date(q.date).toISOString(),
-		close: q.close ?? 0,
-	}));
+	const points: PricePoint[] = quotes.map(
+		(q: { date: Date; close: number | null }) => ({
+			date: new Date(q.date).toISOString(),
+			close: q.close ?? 0,
+		}),
+	);
+
+	// Drop trailing zero-close points (Yahoo sometimes returns an incomplete last candle)
+	while (points.length > 1 && points[points.length - 1].close === 0) {
+		points.pop();
+	}
+
+	return points;
 }
 
 function getStartDate(range: string): string {

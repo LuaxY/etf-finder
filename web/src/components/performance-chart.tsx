@@ -39,7 +39,7 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 
 	return (
 		<ResponsiveContainer width="100%" height={220}>
-			<AreaChart data={data}>
+			<AreaChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
 				<defs>
 					<linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
 						<stop offset="0%" stopColor={color} stopOpacity={0.2} />
@@ -68,6 +68,8 @@ export function PerformanceChart({ data, isLoading }: PerformanceChartProps) {
 					tickFormatter={(val) => `$${val.toFixed(0)}`}
 					tickLine={false}
 					axisLine={false}
+					mirror
+					dx={4}
 				/>
 				<Tooltip
 					content={({ active, payload }) => {

@@ -18,4 +18,4 @@ const app = new Elysia()
   )
   .listen(port);
 
-console.log(`Server running at http://localhost:${app.server?.port}`);
+console.log(`Server running on port ${app.server?.port}`);

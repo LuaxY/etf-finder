@@ -1,41 +1,41 @@
 export interface ETF {
-	symbol: string;
-	name: string;
-	description: string;
-	mer: number;
-	topCountries: { country: string; allocation: number }[];
-	productUrl: string;
-	provider: string;
-	exchange: string;
-	currency: string;
-	currentPrice: number;
+  currency: string;
+  currentPrice: number;
+  description: string;
+  exchange: string;
+  mer: number;
+  name: string;
+  productUrl: string;
+  provider: string;
+  symbol: string;
+  topCountries: { country: string; allocation: number }[];
 }
 
 export interface SearchResponse {
-	etfs: ETF[];
-	summary: string;
+  etfs: ETF[];
+  summary: string;
 }
 
 export interface PricePoint {
-	date: string;
-	close: number;
+  close: number;
+  date: string;
 }
 
 export interface HistoryResponse {
-	prices: PricePoint[];
+  prices: PricePoint[];
 }
 
 export type Period =
-	| "1D"
-	| "5D"
-	| "1M"
-	| "6M"
-	| "YTD"
-	| "1Y"
-	| "5Y"
-	| "MAX"
-	| "custom";
+  | "1D"
+  | "5D"
+  | "1M"
+  | "6M"
+  | "YTD"
+  | "1Y"
+  | "5Y"
+  | "MAX"
+  | "custom";
 
 export interface SuggestionsResponse {
-	suggestions: string[];
+  suggestions: string[];
 }

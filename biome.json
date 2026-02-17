@@ -1,7 +1,4 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
-	"extends": ["ultracite"],
-	"files": {
-		"ignore": ["node_modules", "dist", ".next"]
-	}
+  "$schema": "https://biomejs.dev/schemas/2.4.0/schema.json",
+  "extends": ["ultracite/core", "ultracite/react"]
 }

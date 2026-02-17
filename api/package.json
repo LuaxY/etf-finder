@@ -1,19 +1,19 @@
 {
-	"name": "api",
-	"private": true,
-	"scripts": {
-		"dev": "bun run --hot src/index.ts"
-	},
-	"dependencies": {
-		"@ai-sdk/openai": "^1",
-		"@elysiajs/cors": "1.2",
-		"@mastra/core": "latest",
-		"ai": "^4",
-		"elysia": "1.2",
-		"yahoo-finance2": "3",
-		"zod": "^3"
-	},
-	"devDependencies": {
-		"@types/bun": "latest"
-	}
+  "name": "api",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot src/index.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1",
+    "@elysiajs/cors": "1.2",
+    "@mastra/core": "latest",
+    "ai": "^4",
+    "elysia": "1.2",
+    "yahoo-finance2": "3",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
 }

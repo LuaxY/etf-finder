@@ -16,27 +16,28 @@ AI-powered ETF discovery tool. Search by industry, get recommendations from Clau
 api/
   src/
     index.ts                    # Elysia server (port 3001, CORS)
-    routes/etf.ts               # POST /api/etfs/search, GET /api/etfs/:symbol/history
+    routes/etf.ts               # GET /api/etfs/suggestions, POST /api/etfs/search, GET /api/etfs/:symbol/history
     mastra/
       index.ts                  # Mastra instance
       workflows/etf-search.ts   # Two-step workflow: AI picks symbols → Yahoo enriches data
     lib/yahoo.ts                # yahoo-finance2 wrapper (historical prices, ETF details)
-    lib/cache.ts                # In-memory TTL cache for search results
+    lib/cache.ts                # In-memory TTL cache for search results and suggestions
+    lib/suggestions.ts          # AI autocomplete suggestions via OpenRouter (morph model)
 web/
   src/
     App.tsx                     # App shell (QueryProvider, search state)
     main.tsx                    # Entry point
     components/
-      search-input.tsx          # Search bar + example industry chips
+      search-input.tsx          # Search bar + autocomplete dropdown + example industry chips
       etf-table.tsx             # Table with inline expandable chart rows
       performance-chart.tsx     # Recharts area chart (teal/red) with loading overlay
       search-loading.tsx        # Animated multi-step loading indicator
       time-horizon.tsx          # Period toggle (1D–MAX)
       ui/                       # shadcn components
-    hooks/use-etf.ts            # useSearchETFs (mutation), useETFHistory (query)
+    hooks/use-etf.ts            # useSearchETFs (mutation), useSuggestions (query), useETFHistory (query)
     lib/
       api.ts                    # ky client (prefixUrl, 120s timeout)
-      types.ts                  # ETF, SearchResponse, PricePoint, Period
+      types.ts                  # ETF, SearchResponse, SuggestionsResponse, PricePoint, Period
       utils.ts                  # cn() utility
 ```
 
@@ -65,6 +66,7 @@ bun run lint:fix                # Auto-fix with --write
 
 ## API Endpoints
 
+- `GET /api/etfs/suggestions?q=string` — AI autocomplete suggestions, returns `{ suggestions: string[] }`. Cached with `suggestions:` key prefix, lowercased. Returns empty array if `q < 2 chars` or on error.
 - `POST /api/etfs/search` — body: `{ industry: string }` → `{ etfs: ETF[], summary: string }`
 - `GET /api/etfs/:symbol/history?period=1Y` — periods: 1D, 5D, 1M, 6M, YTD, 1Y, 5Y, MAX (or `from`+`to` for custom)
 
@@ -78,4 +80,5 @@ bun run lint:fix                # Auto-fix with --write
 - **Two-step workflow**: Step 1 (AI) picks symbols + country allocations + summary. Step 2 enriches from Yahoo Finance (name, description, MER, provider, exchange, currency, price). Country data comes from AI, everything else from Yahoo.
 - **Exchange normalization**: Yahoo exchange names mapped to friendly names (NYSEArca → NYSE, NasdaqGM → NASDAQ) in `yahoo.ts`
 - **1D fallback**: If 1-day period returns no data (weekend/holiday), retries up to 5 times shifting back one day
+- **Autocomplete suggestions**: `lib/suggestions.ts` uses `generateObject` with a fast model (`openai/gpt-oss-safeguard-20b`) via OpenRouter. Frontend debounces input by 300ms (`@uidotdev/usehooks`), shows dropdown with keyboard nav (ArrowUp/Down, Enter, Escape) and ARIA combobox roles. Cached server-side with `suggestions:` prefix.
 - **UI**: Table rows expand inline to show about + country bars + chart. NumberFlow for animated price transitions. Chart keeps previous data visible with loading overlay during period switches.

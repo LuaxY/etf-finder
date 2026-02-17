@@ -1,12 +1,19 @@
 {
-	"name": "etf-recommendation",
-	"private": true,
-	"workspaces": ["api", "web"],
-	"scripts": {
-		"dev": "bun run --filter '*' dev",
-		"dev:api": "bun run --filter api dev",
-		"dev:web": "bun run --filter web dev",
-		"lint": "biome check .",
-		"lint:fix": "biome check --write ."
-	}
+  "name": "etf-recommendation",
+  "private": true,
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:api": "bun run --filter api dev",
+    "dev:web": "bun run --filter web dev",
+    "lint": "ultracite check",
+    "lint:fix": "ultracite fix"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.0",
+    "ultracite": "^7.2.3"
+  }
 }

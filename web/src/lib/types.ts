@@ -6,6 +6,9 @@ export interface ETF {
 	topCountries: { country: string; allocation: number }[];
 	productUrl: string;
 	provider: string;
+	exchange: string;
+	currency: string;
+	currentPrice: number;
 }
 
 export interface SearchResponse {

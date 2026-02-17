@@ -56,16 +56,30 @@ export async function getHistory(
 		const period = opts.period ?? "1M";
 		const config = periodConfig[period];
 
-		const result = await yahooFinance.chart(
-			symbol,
-			{
-				period1: getStartDate(config.range),
-				interval: config.interval,
-			},
-			{ validateResult: false },
-		);
+		let startDate = getStartDate(config.range);
+		let points: PricePoint[] = [];
 
-		return mapQuotes(result);
+		// For 1D, if no data (weekend/holiday), widen the window day by day up to 5 tries
+		const maxRetries = period === "1D" ? 5 : 1;
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			const result = await yahooFinance.chart(
+				symbol,
+				{
+					period1: startDate,
+					interval: config.interval,
+				},
+				{ validateResult: false },
+			);
+			points = mapQuotes(result);
+			if (points.length > 0) break;
+
+			// Shift start date back one more day
+			const d = new Date(startDate);
+			d.setDate(d.getDate() - 1);
+			startDate = d.toISOString().split("T")[0]!;
+		}
+
+		return points;
 	} catch (e) {
 		console.error("Yahoo Finance error:", e);
 		return [];
@@ -80,6 +94,9 @@ export interface ETFDetails {
 	topCountries: { country: string; allocation: number }[];
 	productUrl: string;
 	provider: string;
+	exchange: string;
+	currency: string;
+	currentPrice: number;
 }
 
 const PROVIDER_URL_PATTERNS: Record<string, (symbol: string) => string> = {
@@ -139,6 +156,16 @@ export async function getETFDetails(symbol: string): Promise<ETFDetails> {
 		const topCountries: { country: string; allocation: number }[] = [];
 
 		const productUrl = buildProductUrl(symbol, provider);
+		const rawExchange: string = result.price?.exchangeName || "Unknown";
+		const EXCHANGE_ALIASES: Record<string, string> = {
+			"NYSEArca": "NYSE",
+			"NasdaqGM": "NASDAQ",
+			"NasdaqGS": "NASDAQ",
+			"NasdaqCM": "NASDAQ",
+		};
+		const exchange = EXCHANGE_ALIASES[rawExchange] ?? rawExchange;
+		const currency = result.price?.currency || "USD";
+		const currentPrice = result.price?.regularMarketPrice ?? 0;
 
 		return {
 			symbol,
@@ -148,6 +175,9 @@ export async function getETFDetails(symbol: string): Promise<ETFDetails> {
 			topCountries,
 			productUrl,
 			provider,
+			exchange,
+			currency,
+			currentPrice,
 		};
 	} catch (e) {
 		console.error(`Failed to fetch details for ${symbol}:`, e);
@@ -159,6 +189,9 @@ export async function getETFDetails(symbol: string): Promise<ETFDetails> {
 			topCountries: [],
 			productUrl: `https://finance.yahoo.com/quote/${symbol}`,
 			provider: "Unknown",
+			exchange: "Unknown",
+			currency: "USD",
+			currentPrice: 0,
 		};
 	}
 }

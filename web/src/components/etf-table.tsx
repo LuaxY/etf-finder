@@ -1,6 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ExternalLink, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import {
+	ChevronDown,
+	ExternalLink,
+	Sparkles,
+	TrendingDown,
+	TrendingUp,
+} from "lucide-react";
+import NumberFlow from "@number-flow/react";
 import Markdown from "react-markdown";
 import { TimeHorizon } from "./time-horizon";
 import { PerformanceChart } from "./performance-chart";
@@ -8,34 +15,121 @@ import { useETFHistory } from "@/hooks/use-etf";
 import type { ETF, Period } from "@/lib/types";
 
 const COUNTRY_FLAGS: Record<string, string> = {
-	"United States": "🇺🇸", "USA": "🇺🇸", "US": "🇺🇸",
-	"China": "🇨🇳", "Hong Kong": "🇭🇰",
-	"Japan": "🇯🇵", "South Korea": "🇰🇷", "Korea": "🇰🇷",
-	"Taiwan": "🇹🇼", "India": "🇮🇳",
-	"United Kingdom": "🇬🇧", "UK": "🇬🇧",
-	"Germany": "🇩🇪", "France": "🇫🇷", "Switzerland": "🇨🇭",
-	"Netherlands": "🇳🇱", "Sweden": "🇸🇪", "Denmark": "🇩🇰",
-	"Norway": "🇳🇴", "Finland": "🇫🇮", "Ireland": "🇮🇪",
-	"Italy": "🇮🇹", "Spain": "🇪🇸", "Belgium": "🇧🇪",
-	"Austria": "🇦🇹", "Portugal": "🇵🇹", "Luxembourg": "🇱🇺",
-	"Canada": "🇨🇦", "Mexico": "🇲🇽", "Brazil": "🇧🇷",
-	"Australia": "🇦🇺", "New Zealand": "🇳🇿",
-	"Singapore": "🇸🇬", "Indonesia": "🇮🇩", "Malaysia": "🇲🇾",
-	"Thailand": "🇹🇭", "Philippines": "🇵🇭", "Vietnam": "🇻🇳",
-	"Israel": "🇮🇱", "Saudi Arabia": "🇸🇦",
-	"South Africa": "🇿🇦", "Russia": "🇷🇺", "Poland": "🇵🇱",
-	"Chile": "🇨🇱", "Colombia": "🇨🇴", "Peru": "🇵🇪",
-	"Argentina": "🇦🇷", "Turkey": "🇹🇷", "Greece": "🇬🇷",
+	"United States": "🇺🇸",
+	USA: "🇺🇸",
+	US: "🇺🇸",
+	China: "🇨🇳",
+	"Hong Kong": "🇭🇰",
+	Japan: "🇯🇵",
+	"South Korea": "🇰🇷",
+	Korea: "🇰🇷",
+	Taiwan: "🇹🇼",
+	India: "🇮🇳",
+	"United Kingdom": "🇬🇧",
+	UK: "🇬🇧",
+	Germany: "🇩🇪",
+	France: "🇫🇷",
+	Switzerland: "🇨🇭",
+	Netherlands: "🇳🇱",
+	Sweden: "🇸🇪",
+	Denmark: "🇩🇰",
+	Norway: "🇳🇴",
+	Finland: "🇫🇮",
+	Ireland: "🇮🇪",
+	Italy: "🇮🇹",
+	Spain: "🇪🇸",
+	Belgium: "🇧🇪",
+	Austria: "🇦🇹",
+	Portugal: "🇵🇹",
+	Luxembourg: "🇱🇺",
+	Canada: "🇨🇦",
+	Mexico: "🇲🇽",
+	Brazil: "🇧🇷",
+	Australia: "🇦🇺",
+	"New Zealand": "🇳🇿",
+	Singapore: "🇸🇬",
+	Indonesia: "🇮🇩",
+	Malaysia: "🇲🇾",
+	Thailand: "🇹🇭",
+	Philippines: "🇵🇭",
+	Vietnam: "🇻🇳",
+	Israel: "🇮🇱",
+	"Saudi Arabia": "🇸🇦",
+	"South Africa": "🇿🇦",
+	Russia: "🇷🇺",
+	Poland: "🇵🇱",
+	Chile: "🇨🇱",
+	Colombia: "🇨🇴",
+	Peru: "🇵🇪",
+	Argentina: "🇦🇷",
+	Turkey: "🇹🇷",
+	Greece: "🇬🇷",
 };
 
 function countryFlag(country: string): string {
 	return COUNTRY_FLAGS[country] ?? "🌐";
 }
 
+const EXCHANGE_FLAGS: Record<string, string> = {
+	NMS: "🇺🇸",
+	NYQ: "🇺🇸",
+	NGM: "🇺🇸",
+	PCX: "🇺🇸",
+	BTS: "🇺🇸",
+	ASE: "🇺🇸",
+	NCM: "🇺🇸",
+	NYSE: "🇺🇸",
+	NASDAQ: "🇺🇸",
+	TOR: "🇨🇦",
+	TSX: "🇨🇦",
+	VAN: "🇨🇦",
+	CNQ: "🇨🇦",
+	LSE: "🇬🇧",
+	IOB: "🇬🇧",
+	GER: "🇩🇪",
+	FRA: "🇩🇪",
+	XETRA: "🇩🇪",
+	PAR: "🇫🇷",
+	EPA: "🇫🇷",
+	AMS: "🇳🇱",
+	EAM: "🇳🇱",
+	MIL: "🇮🇹",
+	MCE: "🇪🇸",
+	STO: "🇸🇪",
+	CPH: "🇩🇰",
+	OSL: "🇳🇴",
+	HEL: "🇫🇮",
+	SWX: "🇨🇭",
+	EBS: "🇨🇭",
+	JPX: "🇯🇵",
+	TYO: "🇯🇵",
+	HKG: "🇭🇰",
+	HKSE: "🇭🇰",
+	KSC: "🇰🇷",
+	KOE: "🇰🇷",
+	TAI: "🇹🇼",
+	TWO: "🇹🇼",
+	ASX: "🇦🇺",
+	NZE: "🇳🇿",
+	SGX: "🇸🇬",
+	SES: "🇸🇬",
+	NSI: "🇮🇳",
+	BSE: "🇮🇳",
+	SAO: "🇧🇷",
+	MEX: "🇲🇽",
+};
+
+function exchangeFlag(exchange: string): string {
+	return EXCHANGE_FLAGS[exchange] ?? "🌐";
+}
 
 const COUNTRY_COLORS = [
-	"bg-teal-600", "bg-cyan-500", "bg-emerald-500",
-	"bg-sky-500", "bg-violet-400", "bg-amber-400",
+	"bg-teal-600",
+	"bg-cyan-500",
+	"bg-emerald-500",
+	"bg-sky-500",
+	"bg-violet-400",
+	"bg-amber-400",
 ];
 
 interface ETFTableProps {
@@ -71,13 +165,17 @@ function ExpandedContent({ etf }: { etf: ETF }) {
 
 				{/* Geographic Exposure */}
 				{etf.topCountries.length > 0 && (
-					<div className="space-y-2.5">
+					<div className="rounded-lg border border-gray-200 bg-white p-4 space-y-2.5">
 						{etf.topCountries.map((c) => {
-							const maxAllocation = Math.max(...etf.topCountries.map((x) => x.allocation));
+							const maxAllocation = Math.max(
+								...etf.topCountries.map((x) => x.allocation),
+							);
 							const barWidth = (c.allocation / maxAllocation) * 100;
 							return (
 								<div key={c.country} className="flex items-center gap-3">
-									<span className="shrink-0 text-base leading-none">{countryFlag(c.country)}</span>
+									<span className="shrink-0 text-base leading-none">
+										{countryFlag(c.country)}
+									</span>
 									<span className="w-24 shrink-0 truncate text-xs text-gray-600">
 										{c.country}
 									</span>
@@ -100,16 +198,102 @@ function ExpandedContent({ etf }: { etf: ETF }) {
 			{/* Chart — full width below */}
 			<div>
 				<div className="mb-3 flex items-center justify-between">
-					<p className="text-sm font-medium text-gray-700">Performance</p>
+					<PriceStats
+						currentPrice={etf.currentPrice}
+						currency={etf.currency}
+						prices={data?.prices ?? []}
+						isLoading={isLoading}
+					/>
 					<TimeHorizon selected={period} onChange={setPeriod} />
 				</div>
 				<div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-					<PerformanceChart
-						data={data?.prices ?? []}
-						isLoading={isLoading}
-					/>
+					<PerformanceChart data={data?.prices ?? []} isLoading={isLoading} />
 				</div>
 			</div>
+		</div>
+	);
+}
+
+function PriceStats({
+	currentPrice,
+	currency,
+	prices,
+}: {
+	currentPrice: number;
+	currency: string;
+	prices: { date: string; close: number }[];
+	isLoading: boolean;
+}) {
+	const prevRef = useRef({ priceDiff: 0, pctChange: 0, hasData: false });
+
+	const { priceDiff, pctChange, hasData } = useMemo(() => {
+		if (!prices || prices.length < 2) return prevRef.current;
+		const first = prices[0].close;
+		const last = prices[prices.length - 1].close;
+		const next = {
+			priceDiff: last - first,
+			pctChange: ((last - first) / first) * 100,
+			hasData: true,
+		};
+		prevRef.current = next;
+		return next;
+	}, [prices]);
+
+	const isPositive = priceDiff >= 0;
+	const color = isPositive ? "text-emerald-600" : "text-red-500";
+
+	const currencyFormat = useMemo(
+		() => ({ style: "currency" as const, currency }),
+		[currency],
+	);
+	const pctFormat = useMemo(
+		() => ({
+			style: "percent" as const,
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2,
+			signDisplay: "always" as const,
+		}),
+		[],
+	);
+	const diffFormat = useMemo(
+		() => ({
+			style: "currency" as const,
+			currency,
+			signDisplay: "always" as const,
+		}),
+		[currency],
+	);
+
+	return (
+		<div className="flex items-baseline gap-2.5">
+			<NumberFlow
+				value={currentPrice}
+				format={currencyFormat}
+				className="text-lg font-semibold text-gray-900 tabular-nums"
+			/>
+			{hasData && (
+				<>
+					<NumberFlow
+						value={priceDiff}
+						format={diffFormat}
+						className={`text-sm font-medium tabular-nums ${color}`}
+					/>
+					<div
+						className={`flex items-center gap-0.5 text-sm font-medium ${color}`}
+					>
+						{isPositive ? (
+							<TrendingUp className="h-3.5 w-3.5" />
+						) : (
+							<TrendingDown className="h-3.5 w-3.5" />
+						)}
+						<NumberFlow
+							value={pctChange / 100}
+							format={pctFormat}
+							className="tabular-nums"
+						/>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
@@ -197,13 +381,16 @@ function YearPerformance({ symbol }: { symbol: string }) {
 
 	return (
 		<div className="hidden shrink-0 text-right sm:block w-20">
-			<p className={`flex items-center justify-end gap-1 tabular-nums text-sm font-medium ${isPositive ? "text-emerald-600" : "text-red-500"}`}>
+			<p
+				className={`flex items-center justify-end gap-1 tabular-nums text-sm font-medium ${isPositive ? "text-emerald-600" : "text-red-500"}`}
+			>
 				{isPositive ? (
 					<TrendingUp className="h-3.5 w-3.5" />
 				) : (
 					<TrendingDown className="h-3.5 w-3.5" />
 				)}
-				{isPositive ? "+" : ""}{pctChange.toFixed(1)}%
+				{isPositive ? "+" : ""}
+				{pctChange.toFixed(1)}%
 			</p>
 			<p className="text-xs text-gray-400">1Y</p>
 		</div>
@@ -215,7 +402,12 @@ function ETFRow({
 	isExpanded,
 	onToggle,
 	isLast,
-}: { etf: ETF; isExpanded: boolean; onToggle: () => void; isLast: boolean }) {
+}: {
+	etf: ETF;
+	isExpanded: boolean;
+	onToggle: () => void;
+	isLast: boolean;
+}) {
 	return (
 		<div className={!isLast && !isExpanded ? "border-b border-gray-100" : ""}>
 			<button
@@ -233,7 +425,17 @@ function ETFRow({
 					<p className="truncate text-sm font-medium text-gray-900">
 						{etf.name}
 					</p>
-					<p className="truncate text-xs text-gray-400">{etf.provider}</p>
+					<p className="truncate text-xs text-gray-400">
+						{etf.provider}
+						{etf.exchange && etf.exchange !== "Unknown" && (
+							<span className="ml-1.5 text-gray-300">·</span>
+						)}
+						{etf.exchange && etf.exchange !== "Unknown" && (
+							<span className="ml-1.5">
+								{exchangeFlag(etf.exchange)} {etf.exchange}
+							</span>
+						)}
+					</p>
 				</div>
 
 				{/* 1Y Performance */}
@@ -249,7 +451,12 @@ function ETFRow({
 
 				{/* Country allocation bar (desktop) */}
 				{etf.topCountries.length > 0 && (
-					<div className="hidden shrink-0 lg:block" title={etf.topCountries.map((c) => `${c.country} ${c.allocation.toFixed(1)}%`).join(", ")}>
+					<div
+						className="hidden shrink-0 lg:block"
+						title={etf.topCountries
+							.map((c) => `${c.country} ${c.allocation.toFixed(1)}%`)
+							.join(", ")}
+					>
 						<div className="flex h-1.5 w-24 overflow-hidden rounded-full">
 							{etf.topCountries.map((c, i) => (
 								<div
@@ -261,7 +468,10 @@ function ETFRow({
 							<div className="flex-1 bg-gray-100" />
 						</div>
 						<p className="mt-1 truncate text-[10px] text-gray-400">
-							{etf.topCountries[0]?.country}{etf.topCountries.length > 1 ? ` +${etf.topCountries.length - 1}` : ""}
+							{etf.topCountries[0]?.country}
+							{etf.topCountries.length > 1
+								? ` +${etf.topCountries.length - 1}`
+								: ""}
 						</p>
 					</div>
 				)}

@@ -8,7 +8,7 @@ AI-powered ETF discovery tool. Search by industry, get recommendations from Clau
 - **Backend**: Elysia + Mastra workflow + Vercel AI SDK + yahoo-finance2
 - **Frontend**: Vite + React 19 + TanStack Query + Tailwind CSS + shadcn/ui + Recharts + Framer Motion
 - **AI**: OpenRouter → Claude (via `@ai-sdk/openai` with custom baseURL)
-- **No database** — stateless request/response
+- **No database** — stateless with in-memory cache
 
 ## Project Structure
 
@@ -19,8 +19,9 @@ api/
     routes/etf.ts               # POST /api/etfs/search, GET /api/etfs/:symbol/history
     mastra/
       index.ts                  # Mastra instance
-      workflows/etf-search.ts   # AI workflow: generateObject → ETF recommendations
-    lib/yahoo.ts                # yahoo-finance2 wrapper (historical prices)
+      workflows/etf-search.ts   # Two-step workflow: AI picks symbols → Yahoo enriches data
+    lib/yahoo.ts                # yahoo-finance2 wrapper (historical prices, ETF details)
+    lib/cache.ts                # In-memory TTL cache for search results
 web/
   src/
     App.tsx                     # App shell (QueryProvider, search state)
@@ -28,7 +29,8 @@ web/
     components/
       search-input.tsx          # Search bar + example industry chips
       etf-table.tsx             # Table with inline expandable chart rows
-      performance-chart.tsx     # Recharts area chart (green/red gradient)
+      performance-chart.tsx     # Recharts area chart (teal/red) with loading overlay
+      search-loading.tsx        # Animated multi-step loading indicator
       time-horizon.tsx          # Period toggle (1D–MAX)
       ui/                       # shadcn components
     hooks/use-etf.ts            # useSearchETFs (mutation), useETFHistory (query)
@@ -41,7 +43,7 @@ web/
 ## Running
 
 ```bash
-cp api/.env.example api/.env    # Add OPENROUTER_API_KEY
+cp api/.env.example api/.env    # Add OPENROUTER_API_KEY, optionally set SEARCH_CACHE_TTL_SECONDS
 bun install
 bun run dev                     # Starts API (:3001) + Vite (:5173)
 ```
@@ -56,5 +58,9 @@ bun run dev                     # Starts API (:3001) + Vite (:5173)
 - **Mastra workflow**: `createStep`/`createWorkflow` from `@mastra/core/workflows`, executed via `workflow.createRun()` then `run.start()`
 - **OpenRouter**: `createOpenAI({ baseURL: "https://openrouter.ai/api/v1" })` from `@ai-sdk/openai`, model: `anthropic/claude-opus-4.6`
 - **yahoo-finance2 v3**: Requires `new YahooFinance()` instantiation before use
-- **ETF data shape**: `{ symbol, name, description, mer (percentage number, e.g. 0.45 = 0.45%), topCountries: { country, allocation }[], productUrl, provider }`
-- **UI**: Table rows expand inline (below clicked row) to show chart + details with Framer Motion animation
+- **ETF data shape**: `{ symbol, name, description, mer, topCountries: { country, allocation }[], productUrl, provider, exchange, currency, currentPrice }`
+- **Search cache**: In-memory TTL cache (`lib/cache.ts`), key = lowercased+trimmed query, TTL via `SEARCH_CACHE_TTL_SECONDS` env (default 3600s). Identical queries skip AI + Yahoo.
+- **Two-step workflow**: Step 1 (AI) picks symbols + country allocations + summary. Step 2 enriches from Yahoo Finance (name, description, MER, provider, exchange, currency, price). Country data comes from AI, everything else from Yahoo.
+- **Exchange normalization**: Yahoo exchange names mapped to friendly names (NYSEArca → NYSE, NasdaqGM → NASDAQ) in `yahoo.ts`
+- **1D fallback**: If 1-day period returns no data (weekend/holiday), retries up to 5 times shifting back one day
+- **UI**: Table rows expand inline to show about + country bars + chart. NumberFlow for animated price transitions. Chart keeps previous data visible with loading overlay during period switches.

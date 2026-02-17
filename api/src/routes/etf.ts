@@ -1,19 +1,26 @@
 import { Elysia, t } from "elysia";
 import { mastra } from "../mastra";
 import { getHistory } from "../lib/yahoo";
+import { getCached, setCache } from "../lib/cache";
 
 export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
 	.post(
 		"/search",
 		async ({ body, error }) => {
 			try {
+				const key = body.industry.toLowerCase().trim();
+
+				const cached = getCached(key);
+				if (cached) return cached;
+
 				const workflow = mastra.getWorkflow("etfSearchWorkflow");
 				const run = await workflow.createRun();
 				const result = await run.start({
-					inputData: { industry: body.industry },
+					inputData: { industry: key },
 				});
 
 				if (result.status === "success") {
+					setCache(key, result.result);
 					return result.result;
 				}
 

@@ -69,6 +69,9 @@ const etfSchema = z.object({
 	),
 	productUrl: z.string(),
 	provider: z.string(),
+	exchange: z.string(),
+	currency: z.string(),
+	currentPrice: z.number(),
 });
 
 const outputSchema = z.object({

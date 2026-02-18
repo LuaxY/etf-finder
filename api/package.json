@@ -9,6 +9,7 @@
     "@ai-sdk/openai": "^1",
     "@elysiajs/cors": "1.2",
     "@mastra/core": "latest",
+    "@sentry/bun": "^10.39.0",
     "ai": "^4",
     "elysia": "1.2",
     "yahoo-finance2": "3",

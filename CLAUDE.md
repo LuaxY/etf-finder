@@ -8,6 +8,7 @@ AI-powered ETF discovery tool. Search by industry, get recommendations from Clau
 - **Backend**: Elysia + Mastra workflow + Vercel AI SDK + yahoo-finance2
 - **Frontend**: Vite + React 19 + TanStack Query + Tailwind CSS + shadcn/ui + Recharts + Framer Motion
 - **AI**: OpenRouter → Claude (via `@ai-sdk/openai` with custom baseURL)
+- **Error tracking**: Sentry (`@sentry/bun` on API, `@sentry/react` on frontend, `@sentry/vite-plugin` for source map uploads)
 - **No database** — stateless with in-memory cache
 
 ## Project Structure
@@ -44,7 +45,8 @@ web/
 ## Running
 
 ```bash
-cp api/.env.example api/.env    # Add OPENROUTER_API_KEY, optionally set SEARCH_CACHE_TTL_SECONDS
+cp api/.env.example api/.env    # Add OPENROUTER_API_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN
+cp web/.env.example web/.env    # Add VITE_SENTRY_DSN
 bun install
 bun run dev                     # Starts API (:3001) + Vite (:5173)
 ```
@@ -86,3 +88,4 @@ Linting uses [Ultracite](https://www.ultracite.ai/) which wraps Biome with opini
 - **UI**: Table rows expand inline to show about + country bars + chart. NumberFlow for animated price transitions. Chart keeps previous data visible with loading overlay during period switches.
 - **Framer Motion animations**: Staggered variants for "How it works" cards, sector buttons (with whileHover/whileTap), ETF table rows (slide-in from left), and example chips (scale-in). Suggestions dropdown animated with spring physics. Country allocation bars animate width from 0. Time horizon uses `layoutId` for sliding active indicator. Error banner animated in/out with AnimatePresence. Expanded ETF content sections stagger in (about/countries then chart).
 - **AnimatePresence keying**: ETFTable uses `key={results-${search.submittedAt}}` to ensure proper unmount/remount when switching between cached results. Using a static `key="results"` causes stagger children to get stuck at hidden state during rapid key toggles.
+- **Sentry setup**: `api/src/index.ts` initializes `@sentry/bun` before other imports (required for instrumentation), with a global `.onError()` hook. Routes also call `Sentry.captureException()` directly in catch blocks since route-level try/catch swallows errors before the global hook sees them. Frontend initializes in `web/src/main.tsx` with Session Replay (no masking), wraps app in `<Sentry.ErrorBoundary>`. `@sentry/vite-plugin` uploads source maps at build time and deletes `.map` files from `api/public/` after upload. Plugin is disabled outside production. `@sentry/bun` must be installed directly in `api/` (not via `--filter`) due to a bun workspace name collision with its internal `api` dependency.

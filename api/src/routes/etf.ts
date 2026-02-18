@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import { Elysia, t } from "elysia";
 import { getCached, setCache } from "../lib/cache";
 import { generateSuggestions } from "../lib/suggestions";
@@ -26,6 +27,7 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
         return result;
       } catch (e) {
         console.error("Suggestions error:", e);
+        Sentry.captureException(e, { extra: { q } });
         return { suggestions: [] };
       }
     },
@@ -58,9 +60,13 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
         }
 
         console.error("Workflow failed:", JSON.stringify(result, null, 2));
+        Sentry.captureException(new Error("Workflow failed"), {
+          extra: { industry: key, result },
+        });
         return error(500, { message: "Workflow failed" });
       } catch (e) {
         console.error("Search error:", e);
+        Sentry.captureException(e, { extra: { industry: body.industry } });
         return error(500, {
           message: e instanceof Error ? e.message : "Unknown error",
         });
@@ -91,6 +97,9 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
         return { prices };
       } catch (e) {
         console.error("History error:", e);
+        Sentry.captureException(e, {
+          extra: { symbol: params.symbol, period: query.period },
+        });
         return error(500, {
           message: e instanceof Error ? e.message : "Unknown error",
         });

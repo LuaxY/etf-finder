@@ -145,6 +145,11 @@ function ExpandedContent({ etf }: { etf: ETF }) {
   const [period, setPeriod] = useState<Period>("1Y");
   const { data, isLoading } = useETFHistory(etf.symbol, period);
 
+  const maxAllocation = Math.max(
+    ...etf.topCountries.map((c) => c.allocation),
+    1
+  );
+
   const handlePeriodChange = (newPeriod: Period) => {
     track("period_changed", {
       symbol: etf.symbol,
@@ -203,37 +208,33 @@ function ExpandedContent({ etf }: { etf: ETF }) {
         {/* Geographic Exposure */}
         {etf.topCountries.length > 0 && (
           <div className="space-y-2.5 rounded-lg border border-gray-200 bg-white p-4">
-            {etf.topCountries.map((c, i) => {
-              const maxAllocation = Math.max(
-                ...etf.topCountries.map((x) => x.allocation)
-              );
-              const barWidth = (c.allocation / maxAllocation) * 100;
-              return (
-                <div className="flex items-center gap-3" key={c.country}>
-                  <span className="shrink-0 text-base leading-none">
-                    {countryFlag(c.country)}
-                  </span>
-                  <span className="w-24 shrink-0 truncate text-gray-600 text-xs">
-                    {c.country}
-                  </span>
-                  <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                    <motion.div
-                      animate={{ width: `${barWidth}%` }}
-                      className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
-                      initial={{ width: 0 }}
-                      transition={{
-                        delay: i * 0.08,
-                        duration: 0.6,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                    />
-                  </div>
-                  <span className="w-12 shrink-0 text-right font-medium text-gray-500 text-xs tabular-nums">
-                    {c.allocation.toFixed(1)}%
-                  </span>
+            {etf.topCountries.map((c, i) => (
+              <div className="flex items-center gap-3" key={c.country}>
+                <span className="shrink-0 text-base leading-none">
+                  {countryFlag(c.country)}
+                </span>
+                <span className="w-24 shrink-0 truncate text-gray-600 text-xs">
+                  {c.country}
+                </span>
+                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                  <motion.div
+                    animate={{
+                      width: `${(c.allocation / maxAllocation) * 100}%`,
+                    }}
+                    className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
+                    initial={{ width: 0 }}
+                    transition={{
+                      delay: i * 0.08,
+                      duration: 0.6,
+                      ease: [0.25, 0.1, 0.25, 1],
+                    }}
+                  />
                 </div>
-              );
-            })}
+                <span className="w-12 shrink-0 text-right font-medium text-gray-500 text-xs tabular-nums">
+                  {c.allocation.toFixed(1)}%
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </motion.div>
@@ -253,7 +254,6 @@ function ExpandedContent({ etf }: { etf: ETF }) {
           <PriceStats
             currency={etf.currency}
             currentPrice={etf.currentPrice}
-            isLoading={isLoading}
             prices={data?.prices ?? []}
           />
           <TimeHorizon onChange={handlePeriodChange} selected={period} />
@@ -278,7 +278,6 @@ function PriceStats({
   currentPrice: number;
   currency: string;
   prices: { date: string; close: number }[];
-  isLoading: boolean;
 }) {
   const prevRef = useRef({ priceDiff: 0, pctChange: 0, hasData: false });
 
@@ -531,12 +530,12 @@ function ETFRow({
           <p className="truncate text-gray-400 text-xs">
             {etf.provider}
             {etf.exchange && etf.exchange !== "Unknown" && (
-              <span className="ml-1.5 text-gray-300">·</span>
-            )}
-            {etf.exchange && etf.exchange !== "Unknown" && (
-              <span className="ml-1.5">
-                {exchangeFlag(etf.exchange)} {etf.exchange}
-              </span>
+              <>
+                <span className="ml-1.5 text-gray-300">·</span>
+                <span className="ml-1.5">
+                  {exchangeFlag(etf.exchange)} {etf.exchange}
+                </span>
+              </>
             )}
           </p>
         </div>

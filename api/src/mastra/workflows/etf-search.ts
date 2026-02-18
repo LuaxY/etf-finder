@@ -1,13 +1,8 @@
-import { createOpenAI } from "@ai-sdk/openai";
 import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { openrouter } from "../../lib/openrouter";
 import { type ETFDetails, getETFDetails } from "../../lib/yahoo";
-
-const openrouter = createOpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
 
 // Step 1: AI picks symbols with country allocations and explains why
 const aiPickSchema = z.object({

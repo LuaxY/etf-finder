@@ -110,6 +110,13 @@ export interface ETFDetails {
   topCountries: { country: string; allocation: number }[];
 }
 
+const EXCHANGE_ALIASES: Record<string, string> = {
+  NYSEArca: "NYSE",
+  NasdaqGM: "NASDAQ",
+  NasdaqGS: "NASDAQ",
+  NasdaqCM: "NASDAQ",
+};
+
 const PROVIDER_URL_PATTERNS: Record<string, (symbol: string) => string> = {
   Vanguard: (s) =>
     `https://investor.vanguard.com/investment-products/etfs/profile/${s}`,
@@ -157,12 +164,6 @@ export async function getETFDetails(symbol: string): Promise<ETFDetails> {
 
     const productUrl = buildProductUrl(symbol, provider);
     const rawExchange: string = result.price?.exchangeName || "Unknown";
-    const EXCHANGE_ALIASES: Record<string, string> = {
-      NYSEArca: "NYSE",
-      NasdaqGM: "NASDAQ",
-      NasdaqGS: "NASDAQ",
-      NasdaqCM: "NASDAQ",
-    };
     const exchange = EXCHANGE_ALIASES[rawExchange] ?? rawExchange;
     const currency = result.price?.currency || "USD";
     const currentPrice = result.price?.regularMarketPrice ?? 0;

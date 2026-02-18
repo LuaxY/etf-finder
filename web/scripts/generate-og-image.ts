@@ -114,4 +114,6 @@ const png = resvg.render().asPng();
 const outPath = resolve(import.meta.dirname, "../public/og-image.png");
 writeFileSync(outPath, png);
 
-console.log(`Generated OG image: ${outPath} (${(png.byteLength / 1024).toFixed(1)} KB)`);
+console.log(
+  `Generated OG image: ${outPath} (${(png.byteLength / 1024).toFixed(1)} KB)`
+);

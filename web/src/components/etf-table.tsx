@@ -10,6 +10,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import { useETFHistory } from "@/hooks/use-etf";
+import { track } from "@/lib/analytics";
 import type { ETF, Period } from "@/lib/types";
 import { PerformanceChart } from "./performance-chart";
 import { TimeHorizon } from "./time-horizon";
@@ -134,12 +135,22 @@ const COUNTRY_COLORS = [
 
 interface ETFTableProps {
   etfs: ETF[];
+  query: string;
   summary: string;
 }
 
 function ExpandedContent({ etf }: { etf: ETF }) {
   const [period, setPeriod] = useState<Period>("1Y");
   const { data, isLoading } = useETFHistory(etf.symbol, period);
+
+  const handlePeriodChange = (newPeriod: Period) => {
+    track("period_changed", {
+      symbol: etf.symbol,
+      period: newPeriod,
+      previous_period: period,
+    });
+    setPeriod(newPeriod);
+  };
 
   return (
     <motion.div
@@ -172,6 +183,12 @@ function ExpandedContent({ etf }: { etf: ETF }) {
             <a
               className="mt-3 inline-flex items-center gap-1.5 font-medium text-primary text-xs transition-colors hover:text-primary/80"
               href={etf.productUrl}
+              onClick={() =>
+                track("etf_link_clicked", {
+                  symbol: etf.symbol,
+                  url: etf.productUrl,
+                })
+              }
               rel="noopener noreferrer"
               target="_blank"
             >
@@ -237,7 +254,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
             isLoading={isLoading}
             prices={data?.prices ?? []}
           />
-          <TimeHorizon onChange={setPeriod} selected={period} />
+          <TimeHorizon onChange={handlePeriodChange} selected={period} />
         </div>
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
           <PerformanceChart
@@ -337,7 +354,7 @@ function PriceStats({
   );
 }
 
-export function ETFTable({ etfs, summary }: ETFTableProps) {
+export function ETFTable({ etfs, query, summary }: ETFTableProps) {
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
 
   if (etfs.length === 0) {
@@ -345,6 +362,13 @@ export function ETFTable({ etfs, summary }: ETFTableProps) {
   }
 
   const toggle = (symbol: string) => {
+    const isExpanding = expandedSymbol !== symbol;
+    if (isExpanding) {
+      const etf = etfs.find((e) => e.symbol === symbol);
+      track("etf_expanded", { symbol, name: etf?.name, query });
+    } else {
+      track("etf_collapsed", { symbol });
+    }
     setExpandedSymbol((prev) => (prev === symbol ? null : symbol));
   };
 

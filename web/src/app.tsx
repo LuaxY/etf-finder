@@ -15,10 +15,12 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
+import { useState } from "react";
 import { ETFTable } from "@/components/etf-table";
 import { SearchInput } from "@/components/search-input";
 import { SearchLoading } from "@/components/search-loading";
 import { useSearchETFs } from "@/hooks/use-etf";
+import { track } from "@/lib/analytics";
 
 const STEPS = [
   {
@@ -62,7 +64,10 @@ const queryClient = new QueryClient({
 function AppContent() {
   const search = useSearchETFs();
 
+  const [lastQuery, setLastQuery] = useState("");
+
   const handleSearch = (query: string) => {
+    setLastQuery(query);
     search.mutate(query);
   };
 
@@ -84,7 +89,10 @@ function AppContent() {
           >
             <div className="group mb-2 flex items-center gap-2.5">
               <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-400/20">
-                <TrendingUp className="h-3 w-3 text-teal-400" strokeWidth={2.5} />
+                <TrendingUp
+                  className="h-3 w-3 text-teal-400"
+                  strokeWidth={2.5}
+                />
               </div>
               <span className="font-medium text-[0.7rem] text-teal-400/80 uppercase tracking-[0.2em] transition-colors group-hover:text-teal-300">
                 AI-powered discovery
@@ -93,7 +101,10 @@ function AppContent() {
             <h1 className="font-bold font-serif text-[2.2rem] text-white leading-tight tracking-tight">
               <button
                 className="cursor-pointer"
-                onClick={() => search.reset()}
+                onClick={() => {
+                  track("search_reset");
+                  search.reset();
+                }}
                 type="button"
               >
                 ETF Finder
@@ -145,6 +156,7 @@ function AppContent() {
             <ETFTable
               etfs={search.data.etfs}
               key={`results-${search.submittedAt}`}
+              query={lastQuery}
               summary={search.data.summary}
             />
           )}
@@ -227,7 +239,13 @@ function AppContent() {
                   <motion.button
                     className="group flex items-center gap-3 rounded-lg border border-gray-150 bg-white px-4 py-3.5 text-left transition-all hover:border-primary/20 hover:shadow-sm"
                     key={sector.label}
-                    onClick={() => handleSearch(sector.query)}
+                    onClick={() => {
+                      track("search_submitted", {
+                        query: sector.query,
+                        source: "sector_button",
+                      });
+                      handleSearch(sector.query);
+                    }}
                     type="button"
                     variants={{
                       hidden: { opacity: 0, y: 12 },
@@ -260,8 +278,8 @@ function AppContent() {
 
       <footer className="mt-auto py-6 text-center text-[0.7rem] text-gray-400 leading-relaxed">
         <p>
-          For informational purposes only — not financial advice.
-          Always do your own research before making investment decisions.
+          For informational purposes only — not financial advice. Always do your
+          own research before making investment decisions.
         </p>
       </footer>
     </div>

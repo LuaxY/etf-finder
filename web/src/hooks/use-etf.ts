@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useCallback, useRef } from "react";
+import { track } from "@/lib/analytics";
 import { getETFHistory, getSuggestions, searchETFs } from "@/lib/api";
 import type { Period } from "@/lib/types";
 
@@ -13,6 +14,22 @@ export function useSearchETFs() {
       const controller = new AbortController();
       abortRef.current = controller;
       return searchETFs(industry, controller.signal);
+    },
+    onSuccess: (data, industry) => {
+      track("search_completed", {
+        query: industry,
+        etf_count: data.etfs.length,
+        has_summary: !!data.summary,
+      });
+    },
+    onError: (error, industry) => {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+      track("search_failed", {
+        query: industry,
+        error_message: error instanceof Error ? error.message : "Unknown error",
+      });
     },
   });
 

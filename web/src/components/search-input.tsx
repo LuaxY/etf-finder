@@ -3,6 +3,7 @@ import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSuggestions } from "@/hooks/use-etf";
+import { track } from "@/lib/analytics";
 
 const EXAMPLES = [
   "Clean Energy",
@@ -29,12 +30,25 @@ export function SearchInput({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevShowDropdownRef = useRef(false);
   const listboxId = "suggestions-listbox";
 
   const { data } = useSuggestions(query);
   const suggestions = data?.suggestions ?? [];
 
   const showDropdown = isOpen && suggestions.length > 0 && !isLoading;
+
+  // Track suggestion_shown on false→true transitions
+  // biome-ignore lint/correctness/useExhaustiveDependencies: track only on showDropdown transitions
+  useEffect(() => {
+    if (showDropdown && !prevShowDropdownRef.current) {
+      track("suggestion_shown", {
+        query,
+        suggestion_count: suggestions.length,
+      });
+    }
+    prevShowDropdownRef.current = showDropdown;
+  }, [showDropdown]);
 
   // Reset selection when suggestions change
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset on suggestions change
@@ -57,17 +71,24 @@ export function SearchInput({
   }, []);
 
   const selectSuggestion = useCallback(
-    (value: string) => {
+    (value: string, method: "click" | "keyboard") => {
+      track("suggestion_selected", {
+        query,
+        suggestion_text: value,
+        selection_method: method,
+        index: suggestions.indexOf(value),
+      });
       setQuery(value);
       setIsOpen(false);
       onSearch(value);
     },
-    [onSearch]
+    [onSearch, query, suggestions]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
+      track("search_submitted", { query: query.trim(), source: "input" });
       setIsOpen(false);
       onSearch(query.trim());
     }
@@ -96,7 +117,7 @@ export function SearchInput({
       case "Enter": {
         if (selectedIndex >= 0) {
           e.preventDefault();
-          selectSuggestion(suggestions[selectedIndex]);
+          selectSuggestion(suggestions[selectedIndex], "keyboard");
         }
         break;
       }
@@ -166,7 +187,7 @@ export function SearchInput({
                     key={suggestion}
                     onMouseDown={(e) => {
                       e.preventDefault();
-                      selectSuggestion(suggestion);
+                      selectSuggestion(suggestion, "click");
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
                     role="option"
@@ -183,7 +204,10 @@ export function SearchInput({
         {isLoading ? (
           <Button
             className="h-[52px] w-[100px] rounded-lg border border-red-400/30 bg-red-500/20 text-red-400 backdrop-blur-sm transition-all hover:border-red-400/50 hover:bg-red-500/30 hover:text-red-300"
-            onClick={onCancel}
+            onClick={() => {
+              track("search_cancelled", { query });
+              onCancel?.();
+            }}
             type="button"
           >
             <X className="h-5 w-5" />
@@ -216,6 +240,10 @@ export function SearchInput({
             disabled={isLoading}
             key={example}
             onClick={() => {
+              track("search_submitted", {
+                query: example,
+                source: "example_chip",
+              });
               setQuery(example);
               setIsOpen(false);
               onSearch(example);

@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app";
 import "./index.css";
+import { initAnalytics, track } from "./lib/analytics";
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
@@ -25,6 +26,9 @@ Sentry.init({
   ],
 });
 
+initAnalytics();
+track("page_viewed");
+
 const rootEl = document.getElementById("root");
 if (!rootEl) {
   throw new Error("Root element not found");
@@ -35,9 +39,13 @@ createRoot(rootEl).render(
     <Sentry.ErrorBoundary
       fallback={({ error, resetError }) => (
         <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
-          <p className="font-semibold text-gray-900 text-lg">Something went wrong</p>
+          <p className="font-semibold text-gray-900 text-lg">
+            Something went wrong
+          </p>
           <p className="max-w-md text-gray-500 text-sm">
-            {error instanceof Error ? error.message : "An unexpected error occurred."}
+            {error instanceof Error
+              ? error.message
+              : "An unexpected error occurred."}
           </p>
           <button
             className="rounded-md bg-teal-600 px-4 py-2 text-sm text-white hover:bg-teal-700"

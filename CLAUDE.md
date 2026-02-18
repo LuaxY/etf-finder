@@ -19,6 +19,7 @@ api/
   src/
     index.ts                    # Elysia server (port 3001, CORS)
     routes/etf.ts               # GET /api/etfs/suggestions, POST /api/etfs/search, GET /api/etfs/:symbol/history
+    routes/subscribe.ts         # POST /api/subscribe — email collection via Loops.so
     mastra/
       index.ts                  # Mastra instance
       workflows/etf-search.ts   # Two-step workflow: AI picks symbols → Yahoo enriches data
@@ -31,12 +32,14 @@ web/
     main.tsx                    # Entry point
     components/
       search-input.tsx          # Search bar + animated autocomplete dropdown + staggered example chips
-      etf-table.tsx             # Table with staggered row entrance, animated country bars, expandable chart rows
+      etf-table.tsx             # Table with staggered row entrance, animated country bars, expandable chart rows + email popup trigger
+      email-popup.tsx           # Email collection dialog (subscribe via Loops.so)
       performance-chart.tsx     # Recharts area chart (teal/red) with loading overlay
       search-loading.tsx        # Animated multi-step loading indicator
       time-horizon.tsx          # Period toggle (1D–MAX) with layoutId sliding indicator
       ui/                       # shadcn components
     hooks/use-etf.ts            # useSearchETFs (mutation), useSuggestions (query), useETFHistory (query)
+    hooks/use-email-popup.ts    # Email popup trigger logic (3s delay after first ETF expansion)
     lib/
       analytics.ts              # Mixpanel wrapper: initAnalytics() + track() with graceful no-op
       api.ts                    # ky client (prefixUrl, 120s timeout)
@@ -47,7 +50,7 @@ web/
 ## Running
 
 ```bash
-cp api/.env.example api/.env    # Add OPENROUTER_API_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN
+cp api/.env.example api/.env    # Add OPENROUTER_API_KEY, SENTRY_DSN, SENTRY_AUTH_TOKEN, LOOPS_API_KEY
 cp web/.env.example web/.env    # Add VITE_SENTRY_DSN, VITE_MIXPANEL_TOKEN
 bun install
 bun run dev                     # Starts API (:3001) + Vite (:5173)
@@ -75,6 +78,7 @@ Linting uses [Ultracite](https://www.ultracite.ai/) which wraps Biome with opini
 - `GET /api/etfs/suggestions?q=string` — AI autocomplete suggestions, returns `{ suggestions: string[] }`. Cached with `suggestions:` key prefix, lowercased. Returns empty array if `q < 2 chars` or on error.
 - `POST /api/etfs/search` — body: `{ industry: string }` → `{ etfs: ETF[], summary: string }`
 - `GET /api/etfs/:symbol/history?period=1Y` — periods: 1D, 5D, 1M, 6M, YTD, 1Y, 5Y, MAX (or `from`+`to` for custom)
+- `POST /api/subscribe` — body: `{ email: string }` → `{ success: boolean }`. Forwards to Loops.so contacts API. Treats 201 (created) and 409 (already exists) as success. Sends `source: "etf-finder"` property.
 
 ## Key Patterns
 
@@ -91,4 +95,5 @@ Linting uses [Ultracite](https://www.ultracite.ai/) which wraps Biome with opini
 - **Framer Motion animations**: Staggered variants for "How it works" cards, sector buttons (with whileHover/whileTap), ETF table rows (slide-in from left), and example chips (scale-in). Suggestions dropdown animated with spring physics. Country allocation bars animate width from 0. Time horizon uses `layoutId` for sliding active indicator. Error banner animated in/out with AnimatePresence. Expanded ETF content sections stagger in (about/countries then chart).
 - **AnimatePresence keying**: ETFTable uses `key={results-${search.submittedAt}}` to ensure proper unmount/remount when switching between cached results. Using a static `key="results"` causes stagger children to get stuck at hidden state during rapid key toggles.
 - **Sentry setup**: `api/src/index.ts` initializes `@sentry/bun` before other imports (required for instrumentation), with a global `.onError()` hook. Routes also call `Sentry.captureException()` directly in catch blocks since route-level try/catch swallows errors before the global hook sees them. Frontend initializes in `web/src/main.tsx` with Session Replay (no masking), wraps app in `<Sentry.ErrorBoundary>`. `@sentry/vite-plugin` uploads source maps at build time and deletes `.map` files from `api/public/` after upload. Plugin is disabled outside production. `@sentry/bun` must be installed directly in `api/` (not via `--filter`) due to a bun workspace name collision with its internal `api` dependency.
-- **Mixpanel analytics**: `web/src/lib/analytics.ts` exports `initAnalytics()` and `track(event, properties?)`. Initialized in `main.tsx` before render. No-ops gracefully when `VITE_MIXPANEL_TOKEN` is missing. Anonymous only — no user identification. Events tracked: `page_viewed`, `search_submitted` (with `source`: input/suggestion/example_chip/sector_button), `search_completed`, `search_failed` (excludes AbortError), `search_cancelled`, `search_reset`, `suggestion_shown` (false→true transitions via ref), `suggestion_selected` (with click/keyboard method), `etf_expanded`, `etf_collapsed`, `etf_link_clicked`, `period_changed`.
+- **Mixpanel analytics**: `web/src/lib/analytics.ts` exports `initAnalytics()` and `track(event, properties?)`. Initialized in `main.tsx` before render. No-ops gracefully when `VITE_MIXPANEL_TOKEN` is missing. Anonymous only — no user identification. Events tracked: `page_viewed`, `search_submitted` (with `source`: input/suggestion/example_chip/sector_button), `search_completed`, `search_failed` (excludes AbortError), `search_cancelled`, `search_reset`, `suggestion_shown` (false→true transitions via ref), `suggestion_selected` (with click/keyboard method), `etf_expanded`, `etf_collapsed`, `etf_link_clicked`, `period_changed`, `popup_shown`, `popup_dismissed`, `popup_submitted`.
+- **Email popup**: Shows once after first ETF expansion (3s delay). `useEmailPopup` hook tracks trigger state via ref, checks `localStorage("etf-email-popup-dismissed")` to never re-show after dismiss/submit. ETFTable remounts on new searches (keyed by `submittedAt`) which resets the ref, but localStorage prevents re-showing. Backend `POST /api/subscribe` forwards to Loops.so contacts API with `source: "etf-finder"`.

@@ -22,6 +22,10 @@ export function getSuggestions(q: string): Promise<SuggestionsResponse> {
   return api.get("etfs/suggestions", { searchParams: { q } }).json();
 }
 
+export function subscribe(email: string): Promise<{ success: boolean }> {
+  return api.post("subscribe", { json: { email } }).json();
+}
+
 export function getETFHistory(
   symbol: string,
   period: Period,

@@ -9,9 +9,11 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
+import { useEmailPopup } from "@/hooks/use-email-popup";
 import { useETFHistory } from "@/hooks/use-etf";
 import { track } from "@/lib/analytics";
 import type { ETF, Period } from "@/lib/types";
+import { EmailPopup } from "./email-popup";
 import { PerformanceChart } from "./performance-chart";
 import { TimeHorizon } from "./time-horizon";
 
@@ -356,6 +358,7 @@ function PriceStats({
 
 export function ETFTable({ etfs, query, summary }: ETFTableProps) {
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
+  const emailPopup = useEmailPopup();
 
   if (etfs.length === 0) {
     return null;
@@ -366,6 +369,7 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
     if (isExpanding) {
       const etf = etfs.find((e) => e.symbol === symbol);
       track("etf_expanded", { symbol, name: etf?.name, query });
+      emailPopup.notifyExpansion();
     } else {
       track("etf_collapsed", { symbol });
     }
@@ -427,6 +431,11 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
           );
         })}
       </motion.div>
+      <EmailPopup
+        isOpen={emailPopup.isOpen}
+        onDismiss={emailPopup.dismiss}
+        onOpenChange={emailPopup.setIsOpen}
+      />
     </motion.div>
   );
 }

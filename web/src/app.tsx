@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  domAnimation,
+  LazyMotion,
+  MotionConfig,
+  m,
+} from "framer-motion";
 import {
   BarChart3,
   BrainCircuit,
@@ -82,7 +88,7 @@ function AppContent() {
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 py-4 sm:pt-12 sm:pb-10">
-          <motion.div
+          <m.div
             animate={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -114,9 +120,9 @@ function AppContent() {
               Search any sector or theme and get instant ETF recommendations
               backed by real-time market data.
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             animate={{ opacity: 1, y: 0 }}
             className="mt-8"
             initial={{ opacity: 0, y: 12 }}
@@ -127,7 +133,7 @@ function AppContent() {
               onCancel={search.cancel}
               onSearch={handleSearch}
             />
-          </motion.div>
+          </m.div>
         </div>
       </header>
 
@@ -135,7 +141,7 @@ function AppContent() {
         {/* Error */}
         <AnimatePresence>
           {search.isError && (
-            <motion.div
+            <m.div
               animate={{ opacity: 1, y: 0, scale: 1 }}
               className="mx-auto max-w-2xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center"
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -145,7 +151,7 @@ function AppContent() {
               <p className="text-red-600 text-sm">
                 Something went wrong. Please try again.
               </p>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -164,7 +170,7 @@ function AppContent() {
 
         {/* Empty state */}
         {!(search.isPending || search.data || search.isError) && (
-          <motion.div
+          <m.div
             animate={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: 16 }}
             transition={{ delay: 0.25, duration: 0.45, ease: "easeOut" }}
@@ -174,7 +180,7 @@ function AppContent() {
               <h2 className="mb-5 font-semibold font-serif text-gray-900 text-lg">
                 How it works
               </h2>
-              <motion.div
+              <m.div
                 animate="visible"
                 className="grid grid-cols-1 gap-4 sm:grid-cols-3"
                 initial="hidden"
@@ -184,7 +190,7 @@ function AppContent() {
                 }}
               >
                 {STEPS.map((step, i) => (
-                  <motion.div
+                  <m.div
                     className="rounded-lg border border-gray-150 bg-white p-5"
                     key={step.title}
                     variants={{
@@ -214,9 +220,9 @@ function AppContent() {
                     <p className="text-[0.8rem] text-gray-500 leading-relaxed">
                       {step.description}
                     </p>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             </section>
 
             {/* Popular sectors */}
@@ -224,7 +230,7 @@ function AppContent() {
               <h2 className="mb-5 font-semibold font-serif text-gray-900 text-lg">
                 Popular sectors
               </h2>
-              <motion.div
+              <m.div
                 animate="visible"
                 className="grid grid-cols-2 gap-3 sm:grid-cols-3"
                 initial="hidden"
@@ -236,7 +242,7 @@ function AppContent() {
                 }}
               >
                 {SECTORS.map((sector) => (
-                  <motion.button
+                  <m.button
                     className="group flex items-center gap-3 rounded-lg border border-gray-150 bg-white px-4 py-3.5 text-left transition-all hover:border-primary/20 hover:shadow-sm"
                     key={sector.label}
                     onClick={() => {
@@ -268,11 +274,11 @@ function AppContent() {
                     <span className="font-medium text-gray-700 text-sm transition-colors group-hover:text-gray-900">
                       {sector.label}
                     </span>
-                  </motion.button>
+                  </m.button>
                 ))}
-              </motion.div>
+              </m.div>
             </section>
-          </motion.div>
+          </m.div>
         )}
       </main>
 
@@ -289,7 +295,11 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <LazyMotion features={domAnimation}>
+        <MotionConfig reducedMotion="user">
+          <AppContent />
+        </MotionConfig>
+      </LazyMotion>
     </QueryClientProvider>
   );
 }

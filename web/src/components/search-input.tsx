@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,11 +50,12 @@ export function SearchInput({
     prevShowDropdownRef.current = showDropdown;
   }, [showDropdown]);
 
-  // Reset selection when suggestions change
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset on suggestions change
-  useEffect(() => {
+  // Reset selection when suggestions change (computed during render)
+  const prevSuggestionsRef = useRef(data?.suggestions);
+  if (data?.suggestions !== prevSuggestionsRef.current) {
+    prevSuggestionsRef.current = data?.suggestions;
     setSelectedIndex(-1);
-  }, [suggestions]);
+  }
 
   // Close on click outside
   useEffect(() => {
@@ -159,7 +160,7 @@ export function SearchInput({
 
           <AnimatePresence>
             {showDropdown && (
-              <motion.div
+              <m.div
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 className="absolute top-full right-0 left-0 z-50 mt-2 max-h-64 overflow-auto rounded-lg border border-gray-100 bg-white py-1 shadow-teal-950/10 shadow-xl"
                 exit={{ opacity: 0, y: -4, scale: 0.98 }}
@@ -174,7 +175,7 @@ export function SearchInput({
                 }}
               >
                 {suggestions.map((suggestion, index) => (
-                  <motion.div
+                  <m.div
                     animate={{ opacity: 1, x: 0 }}
                     aria-selected={index === selectedIndex}
                     className={`cursor-pointer px-4 py-2.5 text-sm ${
@@ -195,9 +196,9 @@ export function SearchInput({
                     transition={{ delay: index * 0.03, duration: 0.2 }}
                   >
                     {suggestion}
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -223,7 +224,7 @@ export function SearchInput({
         )}
       </form>
 
-      <motion.div
+      <m.div
         animate="visible"
         className="mt-4 flex flex-wrap items-center gap-2"
         initial="hidden"
@@ -235,7 +236,7 @@ export function SearchInput({
         }}
       >
         {EXAMPLES.map((example) => (
-          <motion.button
+          <m.button
             className="rounded-full border border-teal-400/15 bg-teal-400/10 px-3.5 py-1.5 font-medium text-teal-200/90 text-xs backdrop-blur-sm transition-all hover:border-teal-400/30 hover:bg-teal-400/20 hover:text-white disabled:opacity-50"
             disabled={isLoading}
             key={example}
@@ -255,9 +256,9 @@ export function SearchInput({
             }}
           >
             {example}
-          </motion.button>
+          </m.button>
         ))}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import NumberFlow from "@number-flow/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import {
   ChevronDown,
   ExternalLink,
@@ -7,15 +7,20 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import { useEmailPopup } from "@/hooks/use-email-popup";
 import { useETFHistory } from "@/hooks/use-etf";
 import { track } from "@/lib/analytics";
 import type { ETF, Period } from "@/lib/types";
 import { EmailPopup } from "./email-popup";
-import { PerformanceChart } from "./performance-chart";
 import { TimeHorizon } from "./time-horizon";
+
+const PerformanceChart = lazy(() =>
+  import("./performance-chart").then((mod) => ({
+    default: mod.PerformanceChart,
+  }))
+);
 
 const COUNTRY_FLAGS: Record<string, string> = {
   "United States": "🇺🇸",
@@ -160,7 +165,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
   };
 
   return (
-    <motion.div
+    <m.div
       animate="visible"
       className="space-y-5 border-gray-100 border-t bg-gray-50/50 px-4 py-4 sm:px-6 sm:py-5"
       initial="hidden"
@@ -170,7 +175,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
       }}
     >
       {/* Top row: About (left) + Countries (right) */}
-      <motion.div
+      <m.div
         className="grid grid-cols-1 gap-5 lg:grid-cols-2"
         variants={{
           hidden: { opacity: 0, y: 8 },
@@ -217,7 +222,7 @@ function ExpandedContent({ etf }: { etf: ETF }) {
                   {c.country}
                 </span>
                 <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
-                  <motion.div
+                  <m.div
                     animate={{
                       width: `${(c.allocation / maxAllocation) * 100}%`,
                     }}
@@ -237,10 +242,10 @@ function ExpandedContent({ etf }: { etf: ETF }) {
             ))}
           </div>
         )}
-      </motion.div>
+      </m.div>
 
       {/* Chart — full width below */}
-      <motion.div
+      <m.div
         variants={{
           hidden: { opacity: 0, y: 8 },
           visible: {
@@ -259,14 +264,22 @@ function ExpandedContent({ etf }: { etf: ETF }) {
           <TimeHorizon onChange={handlePeriodChange} selected={period} />
         </div>
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <PerformanceChart
-            data={data?.prices ?? []}
-            isLoading={isLoading}
-            period={period}
-          />
+          <Suspense
+            fallback={
+              <div className="flex h-[220px] w-full items-center justify-center">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-gray-400" />
+              </div>
+            }
+          >
+            <PerformanceChart
+              data={data?.prices ?? []}
+              isLoading={isLoading}
+              period={period}
+            />
+          </Suspense>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }
 
@@ -376,7 +389,7 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
   };
 
   return (
-    <motion.div
+    <m.div
       animate={{ opacity: 1, y: 0 }}
       className="mt-4 w-full sm:mt-8"
       exit={{ opacity: 0, y: -8 }}
@@ -384,7 +397,7 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
       transition={{ duration: 0.3 }}
     >
       {summary && (
-        <motion.div
+        <m.div
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
           initial={{ opacity: 0, y: 10 }}
@@ -397,9 +410,9 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
           <div className="prose prose-sm prose-gray prose-li:my-0.5 prose-ul:my-1 max-w-none prose-headings:font-semibold prose-a:text-primary prose-headings:text-gray-900 prose-headings:text-sm prose-strong:text-gray-900 text-gray-600 prose-p:leading-relaxed prose-a:no-underline hover:prose-a:underline">
             <Markdown>{summary}</Markdown>
           </div>
-        </motion.div>
+        </m.div>
       )}
-      <motion.div
+      <m.div
         animate="visible"
         className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
         initial="hidden"
@@ -429,13 +442,13 @@ export function ETFTable({ etfs, query, summary }: ETFTableProps) {
             />
           );
         })}
-      </motion.div>
+      </m.div>
       <EmailPopup
         isOpen={emailPopup.isOpen}
         onDismiss={emailPopup.dismiss}
         onOpenChange={emailPopup.setIsOpen}
       />
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -501,7 +514,7 @@ function ETFRow({
   isLast: boolean;
 }) {
   return (
-    <motion.div
+    <m.div
       className={isLast || isExpanded ? "" : "border-gray-100 border-b"}
       variants={{
         hidden: { opacity: 0, x: -12 },
@@ -579,18 +592,18 @@ function ETFRow({
         )}
 
         {/* Chevron */}
-        <motion.div
+        <m.div
           animate={{ rotate: isExpanded ? 180 : 0 }}
           className="shrink-0"
           transition={{ duration: 0.2 }}
         >
           <ChevronDown className="h-4 w-4 text-gray-400" />
-        </motion.div>
+        </m.div>
       </button>
 
       <AnimatePresence>
         {isExpanded && (
-          <motion.div
+          <m.div
             animate={{ height: "auto", opacity: 1 }}
             className="overflow-hidden"
             exit={{ height: 0, opacity: 0 }}
@@ -598,9 +611,9 @@ function ETFRow({
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
             <ExpandedContent etf={etf} />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 }

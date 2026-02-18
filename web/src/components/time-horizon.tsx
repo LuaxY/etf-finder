@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { Period } from "@/lib/types";
 
 const PERIODS: Period[] = ["1D", "5D", "1M", "6M", "YTD", "1Y", "5Y", "MAX"];
@@ -19,7 +19,7 @@ export function TimeHorizon({ selected, onChange }: TimeHorizonProps) {
           type="button"
         >
           {selected === period && (
-            <motion.div
+            <m.div
               className="absolute inset-0 rounded-md bg-white shadow-sm"
               layoutId="time-horizon-active"
               transition={{ type: "spring", stiffness: 500, damping: 35 }}

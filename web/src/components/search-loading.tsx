@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import {
   BrainCircuit,
   ChartLine,
@@ -33,7 +33,7 @@ export function SearchLoading() {
   const current = STEPS[step];
 
   return (
-    <motion.div
+    <m.div
       animate={{ opacity: 1, y: 0 }}
       className="mt-8 w-full"
       exit={{ opacity: 0, y: -8 }}
@@ -44,7 +44,7 @@ export function SearchLoading() {
       <div className="mb-6 flex flex-col items-center gap-3">
         <div className="relative">
           {/* Outer pulse ring */}
-          <motion.div
+          <m.div
             animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
             className="absolute -inset-2 rounded-2xl bg-primary/10"
             transition={{
@@ -55,7 +55,7 @@ export function SearchLoading() {
           />
           <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                 exit={{ scale: 0.5, opacity: 0, rotate: 20 }}
                 initial={{ scale: 0.5, opacity: 0, rotate: -20 }}
@@ -63,14 +63,14 @@ export function SearchLoading() {
                 transition={{ duration: 0.25 }}
               >
                 <current.icon className="h-5 w-5 text-primary" />
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
         </div>
 
         <div className="text-center">
           <AnimatePresence mode="wait">
-            <motion.p
+            <m.p
               animate={{ opacity: 1, y: 0 }}
               className="font-medium text-gray-700 text-sm"
               exit={{ opacity: 0, y: -6 }}
@@ -79,7 +79,7 @@ export function SearchLoading() {
               transition={{ duration: 0.2 }}
             >
               {current.label}
-            </motion.p>
+            </m.p>
           </AnimatePresence>
           <p className="mt-1 text-gray-400 text-xs">
             This usually takes 15-30 seconds
@@ -89,7 +89,7 @@ export function SearchLoading() {
         {/* Step dots */}
         <div className="flex gap-1.5">
           {STEPS.map((s, i) => (
-            <motion.div
+            <m.div
               animate={{
                 width: i === step ? 20 : 6,
                 backgroundColor: i === step ? "#0f766e" : getStepColor(i, step),
@@ -105,7 +105,7 @@ export function SearchLoading() {
       {/* Skeleton cards */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         {Array.from({ length: 5 }).map((_, i) => (
-          <motion.div
+          <m.div
             animate={{ opacity: 1 }}
             className={`flex items-center gap-4 px-5 py-4 ${i < 4 ? "border-gray-100 border-b" : ""}`}
             initial={{ opacity: 0 }}
@@ -175,9 +175,9 @@ export function SearchLoading() {
               className="h-4 w-4 shrink-0 animate-pulse rounded bg-gray-100"
               style={{ animationDelay: `${i * 150 + 100}ms` }}
             />
-          </motion.div>
+          </m.div>
         ))}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

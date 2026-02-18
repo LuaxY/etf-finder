@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Check, Mail } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { track } from "@/lib/analytics";
@@ -78,7 +78,7 @@ export function EmailPopup({
       <DialogContent className="max-w-sm gap-0 p-0 sm:rounded-xl">
         <AnimatePresence mode="wait">
           {status === "success" ? (
-            <motion.div
+            <m.div
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col items-center justify-center px-6 py-10"
               exit={{ opacity: 0, scale: 0.95 }}
@@ -86,10 +86,10 @@ export function EmailPopup({
               key="success"
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
             >
-              <motion.div
+              <m.div
                 animate={{ scale: 1 }}
                 className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal-100"
-                initial={{ scale: 0 }}
+                initial={{ scale: 0.95, opacity: 0 }}
                 transition={{
                   type: "spring",
                   stiffness: 400,
@@ -98,14 +98,14 @@ export function EmailPopup({
                 }}
               >
                 <Check className="h-6 w-6 text-teal-600" />
-              </motion.div>
+              </m.div>
               <p className="font-semibold text-gray-900">You're in!</p>
               <p className="mt-1 text-gray-500 text-sm">
                 Check your inbox for a confirmation.
               </p>
-            </motion.div>
+            </m.div>
           ) : (
-            <motion.div
+            <m.div
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               initial={{ opacity: 1, scale: 1 }}
@@ -131,7 +131,6 @@ export function EmailPopup({
                 <div className="space-y-3">
                   <input
                     autoComplete="email"
-                    autoFocus
                     className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20"
                     disabled={status === "submitting"}
                     name="email"
@@ -159,7 +158,7 @@ export function EmailPopup({
                   No spam, unsubscribe anytime.
                 </p>
               </form>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </DialogContent>

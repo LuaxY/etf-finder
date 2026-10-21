@@ -11,7 +11,7 @@
     "@mastra/core": "latest",
     "@sentry/bun": "^10.39.0",
     "ai": "^4",
-    "elysia": "1.2",
+    "elysia": "1.4",
     "yahoo-finance2": "3",
     "zod": "^3"
   },

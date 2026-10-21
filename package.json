@@ -24,5 +24,8 @@
   "dependencies": {
     "@sentry/react": "^10.39.0",
     "mixpanel-browser": "^2.74.0"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.6"
   }
 }

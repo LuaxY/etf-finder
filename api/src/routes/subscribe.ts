@@ -3,7 +3,7 @@ import { Elysia, t } from "elysia";
 
 export const subscribeRoutes = new Elysia({ prefix: "/api" }).post(
   "/subscribe",
-  async ({ body, error }) => {
+  async ({ body, status }) => {
     try {
       const res = await fetch("https://app.loops.so/api/v1/contacts/create", {
         method: "POST",
@@ -26,11 +26,11 @@ export const subscribeRoutes = new Elysia({ prefix: "/api" }).post(
       Sentry.captureException(new Error("Loops API error"), {
         extra: { status: res.status, body: text },
       });
-      return error(500, { message: "Failed to subscribe" });
+      return status(500, { message: "Failed to subscribe" });
     } catch (e) {
       console.error("Subscribe error:", e);
       Sentry.captureException(e, { extra: { email: body.email } });
-      return error(500, {
+      return status(500, {
         message: e instanceof Error ? e.message : "Unknown error",
       });
     }

@@ -38,7 +38,7 @@ const pickStep = createStep({
   outputSchema: aiPickSchema,
   execute: async ({ inputData }) => {
     const result = await generateObject({
-      model: openrouter("anthropic/claude-opus-4.6"),
+      model: openrouter.chat("anthropic/claude-opus-4.6"),
       schema: aiPickSchema,
       prompt: `You are an ETF research analyst. Given the industry/sector/theme "${inputData.industry}", return 3-5 relevant ETF ticker symbols that provide the best exposure to this sector.
 

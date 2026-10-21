@@ -39,7 +39,7 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
   )
   .post(
     "/search",
-    async ({ body, error }) => {
+    async ({ body, status }) => {
       try {
         const key = body.industry.toLowerCase().trim();
 
@@ -63,11 +63,11 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
         Sentry.captureException(new Error("Workflow failed"), {
           extra: { industry: key, result },
         });
-        return error(500, { message: "Workflow failed" });
+        return status(500, { message: "Workflow failed" });
       } catch (e) {
         console.error("Search error:", e);
         Sentry.captureException(e, { extra: { industry: body.industry } });
-        return error(500, {
+        return status(500, {
           message: e instanceof Error ? e.message : "Unknown error",
         });
       }
@@ -78,7 +78,7 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
   )
   .get(
     "/:symbol/history",
-    async ({ params, query, error }) => {
+    async ({ params, query, status }) => {
       try {
         const prices = await getHistory(params.symbol, {
           period: query.period as
@@ -100,7 +100,7 @@ export const etfRoutes = new Elysia({ prefix: "/api/etfs" })
         Sentry.captureException(e, {
           extra: { symbol: params.symbol, period: query.period },
         });
-        return error(500, {
+        return status(500, {
           message: e instanceof Error ? e.message : "Unknown error",
         });
       }

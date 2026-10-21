@@ -22,7 +22,6 @@ const app = new Elysia()
     Sentry.captureException(error, {
       extra: { url: request.url, method: request.method },
     });
-    throw error;
   })
   .use(etfRoutes)
   .use(subscribeRoutes)

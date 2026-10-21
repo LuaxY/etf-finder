@@ -10,7 +10,7 @@ const suggestionsSchema = z.object({
 
 export async function generateSuggestions(query: string): Promise<string[]> {
   const result = await generateObject({
-    model: openrouter("openai/gpt-oss-safeguard-20b"),
+    model: openrouter.chat("openai/gpt-oss-safeguard-20b"),
     schema: suggestionsSchema,
     prompt: `You are an ETF search autocomplete engine. Given the partial search query "${query}", suggest 5-8 relevant ETF industry, sector, or theme search terms that a user might be looking for.
 

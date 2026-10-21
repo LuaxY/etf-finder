@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1",
-    "@elysiajs/cors": "1.2",
+    "@elysiajs/cors": "1.4",
     "@mastra/core": "latest",
     "@sentry/bun": "^10.39.0",
     "ai": "^4",
